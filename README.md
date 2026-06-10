@@ -1,212 +1,183 @@
-<p align="center">
-  <img src="https://em-content.zobj.net/source/apple/391/rocket_1f680.png" width="120" alt="rocket" />
-</p>
+<div align="center">
 
-<h1 align="center">pre-flight-check</h1>
+# pre-flight-check
 
-<p align="center">
-  <strong>stop your AI agent from saying "done" when the code is broken</strong>
-</p>
+**Stop your AI coding agent from declaring "done" on broken code.**
 
-<p align="center">
-  <a href="https://github.com/mirekondro/The-Pre-Flight-Check/stargazers"><img src="https://img.shields.io/github/stars/mirekondro/The-Pre-Flight-Check?style=flat&color=yellow" alt="Stars"></a>
-  <a href="https://github.com/mirekondro/The-Pre-Flight-Check/commits/main"><img src="https://img.shields.io/github/last-commit/mirekondro/The-Pre-Flight-Check?style=flat" alt="Last Commit"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/mirekondro/The-Pre-Flight-Check?style=flat" alt="License"></a>
-  <a href="#install"><img src="https://img.shields.io/badge/install-one--line-brightgreen?style=flat" alt="Install"></a>
-</p>
+A universal quality gate that runs Typecheck → Lint → Test → Security Audit before any task is marked complete. Auto-detects Node.js and Python. Works with [10 AI coding tools](#supported-ai-tools).
 
-<p align="center">
-  <a href="#why">Why</a> •
-  <a href="#before--after">Before/After</a> •
-  <a href="#install">Install</a> •
-  <a href="#what-it-checks">What It Checks</a> •
-  <a href="#how-it-works">How It Works</a> •
-  <a href="./INSTALL.md">Full install guide</a>
-</p>
+[![CI](https://github.com/mirekondro/The-Pre-Flight-Check/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mirekondro/The-Pre-Flight-Check/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/mirekondro/The-Pre-Flight-Check?color=blue)](https://github.com/mirekondro/The-Pre-Flight-Check/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
+[Install](#install) · [How it works](#how-it-works) · [Supported AI tools](#supported-ai-tools) · [Full install guide](INSTALL.md)
+
+</div>
 
 ---
 
-A universal AI-agent quality gate that runs a strict, fail-fast pipeline **before** your agent is allowed to declare a task complete or commit code. Auto-detects Node.js or Python projects. Runs **Typecheck → Lint → Test → Security Audit** sequentially. Emits structured Markdown the agent is contractually forbidden from ignoring.
+## The problem
 
-**Works with:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) · [OpenAI Codex](https://openai.com/codex) · [Gemini CLI](https://github.com/google-gemini/gemini-cli) · [Cursor](https://cursor.com) · [GitHub Copilot](https://github.com/features/copilot) · [Windsurf](https://windsurf.com) · [Cline](https://cline.bot) · [Kiro](https://kiro.dev) · [Roo Code](https://roocode.com) · [Agent Skills standard](https://agentskills.io)
+Your AI agent writes a function, watches it not throw at runtime, and reports "done" — while `tsc` would have caught a type error in 50ms, `eslint` would have flagged dead code, and `pytest` would have failed three tests.
 
-No more "I've successfully implemented the feature!" while the TypeScript compiler is on fire.
-
-## Why
-
-LLM coding agents have one persistent failure mode: **declaring victory on broken code.** They write a function, watch it not throw, and report "done" — while `tsc` would have caught a type error in 50ms, `eslint` would have flagged an unused import, and `pytest` would have failed three tests.
-
-`pre-flight-check` closes that loop. It's a tool-neutral quality gate that ships as a native skill, rule, or instruction file for **every major AI coding agent**:
-
-1. **Triggers automatically** when the agent is about to say "done", commit, or open a PR.
-2. **Runs real tooling** (your project's actual typecheck, lint, test, audit commands).
-3. **Halts on first failure** with a Markdown block engineered for an LLM to parse and act on — exact file, line, rule ID, error message.
-4. **Forbids the agent from suppressing errors** (no `// @ts-ignore`, no `# noqa`, no deleting failing tests) via explicit rules in `SKILL.md`.
-
-The agent has to actually fix the bug. Not work around it.
-
-## Before / After
-
-<table>
-<tr>
-<td width="50%">
-
-### 🤖 Claude without pre-flight-check
-
-> "I've implemented the user authentication flow. The login function validates credentials, the session middleware handles token refresh, and I've added the necessary database schema migrations. The implementation is complete and ready for review."
-
-*(typecheck fails on 3 files, 2 tests broken, lint warnings ignored)*
-
-</td>
-<td width="50%">
-
-### 🚀 Claude with pre-flight-check
-
-> Running pre-flight check...
->
-> ```
-> ### ❌ PRE-FLIGHT FAILURE: TYPECHECK
-> Command Executed: npx --no-install tsc --noEmit
-> Context for AI Fix:
-> src/auth/session.ts:42:18 - error TS2345:
->   Argument of type 'string | undefined' is not
->   assignable to parameter of type 'string'.
-> ```
->
-> Fixing `src/auth/session.ts:42` — `userId` can be undefined when the cookie is unset. Adding the guard now.
-
-</td>
-</tr>
-</table>
-
-**Same agent. Same task. One catches the bug before you do.**
-
-```
-┌─────────────────────────────────────────┐
-│  FALSE "DONE" CLAIMS    ████████ -90%   │
-│  BUGS CAUGHT PRE-COMMIT ████████ +100%  │
-│  ESCAPE HATCHES BLOCKED ████████ 100%   │
-│  DEPENDENCIES           ████████ 0      │
-└─────────────────────────────────────────┘
-```
-
-Vanilla Python 3. No `pip install`. No `npm install`. No Node runtime. No SaaS. Runs anywhere `python3` runs.
+`pre-flight-check` closes that loop. One command, four gates, structured failure output the agent has to act on. No more "I've successfully implemented the feature!" while the build is on fire.
 
 ## Install
 
-### Pick your AI tool
+Pick the install path that matches your platform.
 
-| Tool | One-line install (macOS / Linux) | Deploys to |
-|------|----------------------------------|------------|
-| **Claude Code** | `curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh \| bash` | `~/.claude/skills/pre-flight-check/` (global) |
-| **OpenAI Codex** | `curl -fsSL …/install.sh \| bash -s -- --tool codex --project` | `AGENTS.md` at repo root |
-| **Gemini CLI** | `curl -fsSL …/install.sh \| bash -s -- --tool gemini --project` | `GEMINI.md` + `gemini-extension.json` |
-| **Cursor** | `curl -fsSL …/install.sh \| bash -s -- --tool cursor --project` | `.cursor/rules/pre-flight-check.mdc` |
-| **GitHub Copilot** | `curl -fsSL …/install.sh \| bash -s -- --tool copilot --project` | `.github/copilot-instructions.md` |
-| **Windsurf** | `curl -fsSL …/install.sh \| bash -s -- --tool windsurf --project` | `.windsurf/rules/pre-flight-check.md` |
-| **Cline** | `curl -fsSL …/install.sh \| bash -s -- --tool cline --project` | `.clinerules/pre-flight-check.md` |
-| **Kiro** | `curl -fsSL …/install.sh \| bash -s -- --tool kiro --project` | `.kiro/steering/pre-flight-check.md` |
-| **Roo Code** | `curl -fsSL …/install.sh \| bash -s -- --tool roo --project` | `.roo/rules/pre-flight-check.md` |
-| **Agent Skills standard** | `curl -fsSL …/install.sh \| bash -s -- --tool agents-skills --project` | `.agents/skills/pre-flight-check/` |
-| **Everything, all at once** | `curl -fsSL …/install.sh \| bash -s -- --tool all --project` | All of the above |
-
-> **Don't see your tool?** Most agents read `AGENTS.md` at the repo root as a fallback (Codex, Copilot Coding Agent, Windsurf, Kiro). Install with `--tool codex` and most of the ecosystem is covered.
-
-### Windows (PowerShell)
-
-```powershell
-irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 -OutFile $env:TEMP\preflight.ps1
-& $env:TEMP\preflight.ps1 -Tool cursor -Project        # or any tool from the table above
-```
-
-### Manual install
+<details open>
+<summary><b>macOS · Linux (Homebrew)</b></summary>
 
 ```bash
-git clone https://github.com/mirekondro/The-Pre-Flight-Check.git
-cd The-Pre-Flight-Check
-bash install.sh --tool all --project                   # installs into the current repo for every tool
+brew tap mirekondro/pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check
+brew install pre-flight-check
 ```
 
-Open your AI tool in the project root — the skill/rule/instruction file is auto-discovered. See [INSTALL.md](./INSTALL.md) for the full matrix, troubleshooting, and version pinning.
+</details>
 
-## What It Checks
+<details>
+<summary><b>Windows (Scoop)</b></summary>
+
+```powershell
+scoop bucket add pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check
+scoop install pre-flight-check
+```
+
+</details>
+
+<details>
+<summary><b>Any platform (pipx)</b></summary>
+
+```bash
+pipx install pre-flight-check
+```
+
+> Until v1.2.0 is published to PyPI, install from source:
+> `pipx install git+https://github.com/mirekondro/The-Pre-Flight-Check.git`
+
+</details>
+
+<details>
+<summary><b>One-line install (no package manager)</b></summary>
+
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 | iex
+```
+
+</details>
+
+<details>
+<summary><b>Claude Code plugin marketplace</b></summary>
+
+```bash
+claude plugin marketplace add mirekondro/The-Pre-Flight-Check
+claude plugin install pre-flight-check
+```
+
+</details>
+
+Then in any project:
+
+```bash
+pre-flight-check init --tool claude          # or cursor, codex, gemini, copilot, …
+pre-flight-check init --tool all --project   # install for every supported AI tool at once
+```
+
+See [INSTALL.md](INSTALL.md) for the full per-tool matrix and troubleshooting.
+
+## What it does
+
+When your AI agent says "I'm done," it doesn't always mean the code works. `pre-flight-check` interposes a strict, fail-fast pipeline:
+
+```
+Typecheck → Lint → Test → Security Audit
+```
+
+The first stage that fails halts the pipeline, prints a structured Markdown block, and exits `1`. The agent reads that block and **must fix the exact error** before continuing.
+
+Here's what the agent actually sees on a failure:
+
+```
+### ❌ PRE-FLIGHT FAILURE: TYPECHECK
+**Command Executed:** `npx --no-install tsc --noEmit`
+**Context for AI Fix:**
+
+src/auth/session.ts(42,18): error TS2345: Argument of type 'string | undefined'
+is not assignable to parameter of type 'string'.
+```
+
+It knows: which **file** (`session.ts`), which **line** (`42:18`), which **rule** (`TS2345`), and what's wrong. No more "I think the auth flow is implemented."
+
+On success:
+
+```
+### ✅ PRE-FLIGHT PASSED
+All quality gates verified successfully.
+```
+
+## Supported AI tools
+
+| Tool | Native delivery path | One-liner |
+|---|---|---|
+| **Claude Code** | `.claude/skills/pre-flight-check/` | `pre-flight-check init --tool claude` |
+| **OpenAI Codex / AGENTS.md** | `AGENTS.md` at repo root | `pre-flight-check init --tool codex --project` |
+| **Gemini CLI** | `GEMINI.md` + `gemini-extension.json` | `pre-flight-check init --tool gemini --project` |
+| **Cursor** | `.cursor/rules/pre-flight-check.mdc` | `pre-flight-check init --tool cursor --project` |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | `pre-flight-check init --tool copilot --project` |
+| **Windsurf** | `.windsurf/rules/pre-flight-check.md` | `pre-flight-check init --tool windsurf --project` |
+| **Cline** | `.clinerules/pre-flight-check.md` | `pre-flight-check init --tool cline --project` |
+| **Kiro** | `.kiro/steering/pre-flight-check.md` | `pre-flight-check init --tool kiro --project` |
+| **Roo Code** | `.roo/rules/pre-flight-check.md` | `pre-flight-check init --tool roo --project` |
+| **Agent Skills standard** | `.agents/skills/pre-flight-check/` | `pre-flight-check init --tool agents-skills --project` |
+
+> Several tools (Codex, Copilot Coding Agent, Windsurf, Kiro) read `AGENTS.md` at the repo root as a fallback. Installing `--tool codex` alone gives broad ecosystem coverage.
+
+## What it checks
 
 | Stage | Node.js | Python |
-|-------|---------|--------|
+|---|---|---|
 | **1. Typecheck** | `tsc --noEmit` (or `npm run typecheck`) | `mypy .` |
 | **2. Lint** | `eslint .` (or `npm run lint`) | `ruff check .` → `flake8 .` |
-| **3. Test** | `jest --passWithNoTests` / `vitest run` (or `npm test`) | `pytest -q` |
-| **4. Security Audit** | `npm audit --audit-level=high` (or `pnpm`/`yarn` equivalent) | `pip-audit` → `bandit -r .` |
+| **3. Test** | `jest` / `vitest` (or `npm test`) | `pytest -q` |
+| **4. Security Audit** | `npm audit --audit-level=high` | `pip-audit` → `bandit -r .` |
 
-**Auto-detection:**
-- Picks the package manager from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm.
-- Prefers `package.json` scripts over direct tool invocation — your project's `npm run lint` config wins.
-- For Python: uses `poetry run <tool>` if `poetry.lock` (or `[tool.poetry]` in `pyproject.toml`) is detected and poetry is on `PATH`. Otherwise falls back to the bare tool.
-- Tools that aren't installed are skipped silently — no false failures from missing optional gear.
+Stages whose tools aren't installed are **skipped silently** — no false positives from missing optional gear.
 
-## How It Works
+## How it works
 
-1. **Your AI agent triggers the skill.** Either it self-invokes (the skill/rule file instructs it to run before saying "done"), or you ask explicitly: *"run pre-flight check"*.
-2. **Script runs `python3 <install-path>/scripts/run-pipeline.py`** from the repo root. The path depends on which AI tool you installed for — Claude looks under `.claude/skills/…`, others look under `.pre-flight-check/scripts/…`. The installer handles this for you.
-3. **Each stage runs sequentially.** First non-zero exit code halts the loop — no point linting code that doesn't typecheck.
-4. **Output is structured Markdown.** The success block is one line. The failure block names the exact command, the file:line:rule, and the raw stderr — everything an LLM needs to act:
+- **Auto-detects** the runtime from manifest files (`package.json`, `pyproject.toml`, `requirements.txt`, …).
+- **Picks the right package manager** from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm.
+- **Prefers your existing scripts** — if `package.json` defines `lint`, the pipeline calls `npm run lint` instead of invoking `eslint` directly.
+- **Halts on first failure** — no point linting code that doesn't typecheck.
+- **Forbids escape hatches.** The instruction file the AI agent reads (`SKILL.md`, `AGENTS.md`, `.cursorrules/*.mdc`, etc.) explicitly bans `// @ts-ignore`, `# type: ignore`, deleting failing tests, adding to ignore lists, and other ways to mark the gate green without fixing the bug.
 
-   ```
-   ### ❌ PRE-FLIGHT FAILURE: LINT
-   Command Executed: npx --no-install eslint .
-   Context for AI Fix:
-   ```
-   /repo/src/utils/format.ts
-     12:7  error  'tmp' is assigned a value but never used  no-unused-vars
-   ```
-   ```
-
-5. **The instruction file enforces the protocol.** Whether it's `SKILL.md` (Claude / Agent Skills), `AGENTS.md` (Codex), `GEMINI.md`, a Cursor `.mdc` rule, a Copilot instructions file, or any of the other native formats — the body explicitly forbids the agent from:
-   - Declaring the task done while a failure is on screen.
-   - Suppressing errors with ignore comments, ignore lists, or skipped tests.
-   - "Fixing" by deleting the failing assertion.
-   - Re-running the pipeline unchanged hoping for a different result.
-
-6. **Exit code = source of truth.** `0` = green, proceed. `1` = stop everything.
-
-## Supported Runtimes
-
-| Runtime | Detection signal | Stages supported |
-|---------|------------------|------------------|
-| **Node.js** | `package.json` | typecheck, lint, test, audit |
-| **Python** | `pyproject.toml`, `poetry.lock`, `requirements.txt`, `setup.py`, `setup.cfg` | typecheck, lint, test, audit |
-
-Roadmap: Go (`go.mod`), Rust (`Cargo.toml`), Ruby (`Gemfile`). PRs welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+The whole engine is one Python file with zero runtime dependencies. Audit it in five minutes.
 
 ## Requirements
 
-- **Python 3.8+** on `PATH` (the pipeline engine — no other Python deps).
-- **One of the supported AI tools** (see the install table above).
-- Your project's normal dev tooling (`tsc`, `eslint`, `pytest`, etc.) — `pre-flight-check` orchestrates them, doesn't replace them.
+- **Python 3.8+** on `PATH` (the engine — no other Python dependencies)
+- Your project's existing dev tooling — `tsc`, `eslint`, `pytest`, etc. We orchestrate, we don't replace.
 
-## FAQ
+That's it.
 
-**Does it slow my agent down?**
-Only by the time your test suite takes. The pipeline engine itself is ~50ms of Python overhead.
+## Project status
 
-**Can the agent bypass it?**
-The instruction file (whichever native format your tool uses) explicitly forbids common bypass patterns and lists them as "anti-patterns to refuse." A determined agent can technically not invoke the gate, but the instructions tell it to invoke before every "done" / commit. In practice, well-behaved Claude, Codex, Gemini, Cursor, Windsurf, etc. all follow the rule.
+Stable. Used in production on the maintainer's own projects. The failure-block Markdown format is part of the public contract — any change to its shape is a major version bump.
 
-**Does it modify my code?**
-No. It only **reads** by running your existing tools and reporting their output. Fixes are the agent's job.
-
-**Does it work without internet?**
-Yes. Everything runs locally. The security audit stage will warn or skip gracefully if its tool can't reach its CVE feed.
-
-**My project has neither Node nor Python.**
-The skill emits `⚠️ PRE-FLIGHT SKIPPED: UNKNOWN RUNTIME` and exits 1. Add a project manifest, or contribute a new runtime adapter.
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). The bar for new features is high; the bar for new runtime adapters (Go, Rust, Ruby, …) and additional AI-tool adapters is low.
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](LICENSE)
 
 ---
 
-<p align="center">
-  <em>Pre-flight check passed. You are cleared for commit.</em>
-</p>
+<div align="center">
+<sub>If <code>pre-flight-check</code> catches a bug for you that would have shipped — <a href="https://github.com/mirekondro/The-Pre-Flight-Check">star the repo</a> so the next developer finds it too.</sub>
+</div>
