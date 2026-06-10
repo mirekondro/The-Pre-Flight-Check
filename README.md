@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://em-content.zobj.net/source/apple/391/rocket_1f680.png" width="120" alt="rocket" />
-</p>
-
 <h1 align="center">pre-flight-check</h1>
 
 <p align="center">
