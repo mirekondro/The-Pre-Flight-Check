@@ -74,13 +74,16 @@ jobs:
 
       - name: Analyze install.ps1
         shell: pwsh
+        # PSAvoidUsingWriteHost is excluded on purpose: this is an interactive
+        # installer that needs colored output to the console. Write-Output /
+        # Write-Information would break the curl-pipe install UX.
         run: |
-          $results = Invoke-ScriptAnalyzer -Path install.ps1 -Severity Error,Warning
+          $results = Invoke-ScriptAnalyzer -Path install.ps1 -Severity Error,Warning -ExcludeRule PSAvoidUsingWriteHost
           if ($results) {
             $results | Format-Table -AutoSize
             throw "PSScriptAnalyzer reported $($results.Count) issue(s)."
           } else {
-            Write-Host "PSScriptAnalyzer: clean."
+            Write-Output "PSScriptAnalyzer: clean."
           }
 
   # ---------------------------------------------------------------------------
