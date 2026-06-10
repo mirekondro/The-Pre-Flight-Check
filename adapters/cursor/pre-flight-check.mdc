@@ -1,0 +1,110 @@
+---
+description: Mandatory fail-fast quality gate — run Typecheck, Lint, Test, and Security Audit sequentially before declaring any task done or committing code.
+globs:
+alwaysApply: true
+---
+
+# Pre-Flight Check
+
+Run this pipeline before declaring a task complete, before committing or pushing, and after applying any bug fix.
+
+## How to run
+
+```bash
+python3 .pre-flight-check/scripts/run-pipeline.py
+```
+
+Auto-detects Node.js (`package.json`) and Python (`pyproject.toml`, `requirements.txt`, etc.). Runs **Typecheck → Lint → Test → Security Audit** sequentially. Stops on first failure.
+
+## Mandatory trigger rule
+
+You **MUST** run the pre-flight check before:
+
+- Saying "done", "fixed", "complete", "ready to commit", or any synonym.
+- Staging, committing, or pushing code.
+- Opening or marking a pull request ready for review.
+- Switching to a different task after making code edits.
+
+## Output
+
+| Block | Exit code | Meaning |
+|-------|-----------|---------|
+| `### ✅ PRE-FLIGHT PASSED` | `0` | All gates green — proceed. |
+| `### ❌ PRE-FLIGHT FAILURE: [STAGE]` | `1` | Gate failed — stop and fix. |
+| `### ⚠️  PRE-FLIGHT SKIPPED: …` | `1` | Runtime undetected or no tools — resolve first. |
+
+## Strict Fail-Fast Protocol
+
+If you see `### ❌ PRE-FLIGHT FAILURE`, you are **FORBIDDEN** from:
+
+- Declaring the task done.
+- Committing, staging, or pushing.
+- Switching to another task or file.
+- Using `// @ts-ignore`, `# type: ignore`, `# noqa`, `eslint-disable`, or any suppress/ignore mechanism.
+- Deleting or skipping a failing test.
+- Adding a package or file to an ignore list to silence the audit/lint.
+- Re-running the pipeline unchanged hoping for a different result.
+
+**Only permitted action:** fix the exact error shown, re-run, repeat until `### ✅ PRE-FLIGHT PASSED`.
+
+## Reading the failure block
+
+```
+### ❌ PRE-FLIGHT FAILURE: TYPECHECK
+**Command Executed:** `npx --no-install tsc --noEmit`
+**Context for AI Fix:**
+
+```
+src/auth/session.ts(42,18): error TS2345: Argument of type 'string | undefined'
+is not assignable to parameter of type 'string'.
+```
+```
+
+Extract in order:
+1. **Stage name** — selects the repair recipe below.
+2. **`Command Executed`** — confirms which tool failed. Never guess.
+3. **`Context for AI Fix`** — file path + line:col + rule/error code + message verbatim.
+
+Open the named file at the named line. Repair that diagnostic only.
+
+## Stage repair rules
+
+### TYPECHECK
+1. Read the file at the line named in the diagnostic.
+2. Fix the type at its source — narrow, add the missing field, correct the signature.
+3. No `any`, no `as unknown as X`, no `# type: ignore`. Minimum-width cast at external boundaries only, with a one-line comment explaining why.
+4. Re-run.
+
+### LINT
+1. Run the auto-fixer first:
+   - **Node:** `npx eslint . --fix` or `npm run lint -- --fix`
+   - **Python:** `ruff check . --fix` then `ruff format .`
+2. Fix remaining issues manually.
+3. No file-level ignores, no global disables, no adding to exclude lists.
+4. Re-run.
+
+### TEST
+1. Default assumption: production code is wrong, not the test.
+2. Fix the root cause. Do not delete, skip, or relax the assertion.
+3. Re-run.
+
+### SECURITY AUDIT
+1. Identify the vulnerable package and CVE.
+2. Upgrade to the patched version.
+3. No advisory ignore-lists without explicit user confirmation of the risk.
+4. Re-run.
+
+## Anti-patterns — refuse these
+
+- Editing files not named in the diagnostic.
+- Bundling speculative changes alongside the repair.
+- Declaring done while a failure block is visible.
+- Any form of suppression (ignore comment, skip, disable, exclude list).
+
+## Not installed?
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash -s -- --project
+```
+
+See [github.com/mirekondro/The-Pre-Flight-Check](https://github.com/mirekondro/The-Pre-Flight-Check) for full docs.
