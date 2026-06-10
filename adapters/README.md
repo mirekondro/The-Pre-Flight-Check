@@ -7,7 +7,7 @@ contains the source file(s) for one tool. The installer (`install.sh` /
 | Directory | Tool | Deployed to | Format |
 |-----------|------|-------------|--------|
 | `cursor/` | [Cursor](https://cursor.com) | `.cursor/rules/pre-flight-check.mdc` | Cursor Rules (MDC frontmatter) |
-| `copilot/` | [GitHub Copilot](https://github.com/features/copilot) | `.github/copilot-instructions.md` | Markdown |
+| `copilot/` | [GitHub Copilot](https://github.com/features/copilot) | `.github/copilot-instructions.md` | Markdown (no frontmatter) |
 | `windsurf/` | [Windsurf](https://codeium.com/windsurf) | `.windsurfrules` | Markdown |
 | `cline/` | [Cline](https://github.com/cline/cline) | `.clinerules` | Markdown |
 
