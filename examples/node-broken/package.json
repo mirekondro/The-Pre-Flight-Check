@@ -1,0 +1,12 @@
+{
+  "name": "pre-flight-check-fixture-node-broken",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fixture: triggers a TYPECHECK failure in pre-flight-check.",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

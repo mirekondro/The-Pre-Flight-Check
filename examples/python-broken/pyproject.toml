@@ -1,0 +1,12 @@
+[project]
+name = "pre-flight-check-fixture-python-broken"
+version = "0.0.0"
+description = "Fixture: triggers a TYPECHECK failure in pre-flight-check."
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+dev = ["mypy>=1.0"]
+
+[tool.mypy]
+strict = true
+files = ["src"]
