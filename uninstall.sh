@@ -1,23 +1,22 @@
 #!/usr/bin/env bash
 # pre-flight-check — convenience uninstaller (macOS / Linux).
 #
-# Thin wrapper around `install.sh --uninstall`. Use --project to target the
-# current repo's .claude/skills/, --dir PATH for a custom location, or no flag
-# for the global install under ~/.claude/skills/.
+# Thin wrapper around `install.sh --uninstall`. Pass the same --tool flag
+# you used at install time. Defaults to `--tool claude --global`.
 #
 # Usage:
-#   bash uninstall.sh [--global|--project|--dir PATH]
+#   bash uninstall.sh [--tool TOOL] [--global|--project|--dir PATH]
+#   bash uninstall.sh --tool all --project
 #
 # Curl-pipe:
-#   curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/uninstall.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/uninstall.sh | bash -s -- --project
+#   curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/uninstall.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/uninstall.sh | bash -s -- --tool cursor --project
 
 set -euo pipefail
 
-REPO="mirekondro1/The-Pre-Flight-Check"
+REPO="mirekondro/The-Pre-Flight-Check"
 DEFAULT_REF="main"
 
-# Prefer local install.sh if we're inside a clone.
 HERE=""
 if [ -n "${BASH_SOURCE[0]:-}" ]; then
   HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || HERE=""

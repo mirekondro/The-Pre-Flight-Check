@@ -257,3 +257,77 @@ jobs:
             exit 1
           fi
           echo "OK: uninstall removed skill directory."
+
+  # ---------------------------------------------------------------------------
+  # Multi-tool installer: deploy adapters for every supported tool, verify each
+  # native rule/instruction file lands at its expected path, then uninstall and
+  # verify nothing is left behind. Runs in a clean temp dir so it doesn't
+  # pollute the workspace under test.
+  # ---------------------------------------------------------------------------
+  installer-multitool:
+    name: Installer multi-tool round-trip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install --tool all into a temp project
+        run: |
+          TMP=$(mktemp -d)
+          echo "TMP=$TMP" >> "$GITHUB_ENV"
+          (cd "$TMP" && bash "$GITHUB_WORKSPACE/install.sh" --tool all --project --force)
+
+      - name: Verify every adapter file landed
+        run: |
+          expected=(
+            ".claude/skills/pre-flight-check/SKILL.md"
+            ".claude/skills/pre-flight-check/scripts/run-pipeline.py"
+            "AGENTS.md"
+            "GEMINI.md"
+            "gemini-extension.json"
+            ".cursor/rules/pre-flight-check.mdc"
+            ".github/copilot-instructions.md"
+            ".windsurf/rules/pre-flight-check.md"
+            ".clinerules/pre-flight-check.md"
+            ".kiro/steering/pre-flight-check.md"
+            ".roo/rules/pre-flight-check.md"
+            ".agents/skills/pre-flight-check/SKILL.md"
+            ".pre-flight-check/scripts/run-pipeline.py"
+          )
+          missing=0
+          for f in "${expected[@]}"; do
+            if [ ! -e "$TMP/$f" ]; then
+              echo "::error::Missing $f"
+              missing=$((missing + 1))
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "$missing expected file(s) missing"
+            exit 1
+          fi
+          echo "OK: all ${#expected[@]} adapter files present."
+
+      - name: Reject --global for a non-Claude tool
+        run: |
+          (cd "$TMP" && bash "$GITHUB_WORKSPACE/install.sh" --tool cursor --global) 2>&1 | tee /tmp/out.txt
+          if grep -q -- '--global is only supported for --tool claude' /tmp/out.txt; then
+            echo "OK: installer rejected --global for cursor"
+          else
+            echo "::error::installer accepted --global for a non-Claude tool"
+            exit 1
+          fi
+
+      - name: Uninstall --tool all and verify clean
+        run: |
+          (cd "$TMP" && bash "$GITHUB_WORKSPACE/install.sh" --tool all --project --uninstall)
+          remaining=$(find "$TMP" -mindepth 1 -type f | wc -l)
+          if [ "$remaining" -ne 0 ]; then
+            echo "::error::$remaining file(s) left after uninstall:"
+            find "$TMP" -mindepth 1 -type f
+            exit 1
+          fi
+          echo "OK: uninstall left no files behind."

@@ -52,20 +52,20 @@ Pick one. You can run both at the same time — global is your default, project 
 **Global (recommended):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash
 ```
 
 **Project-local:**
 
 ```bash
 cd /path/to/your/project
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.sh | bash -s -- --project
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash -s -- --project
 ```
 
 **Custom directory:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.sh | bash -s -- --dir /opt/team-skills/.claude/skills
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash -s -- --dir /opt/team-skills/.claude/skills
 ```
 
 ### Windows (PowerShell)
@@ -73,14 +73,14 @@ curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/ma
 **Global:**
 
 ```powershell
-irm https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 | iex
 ```
 
 **Project-local:**
 
 ```powershell
 $installer = "$env:TEMP\preflight-install.ps1"
-irm https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.ps1 -OutFile $installer
+irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 -OutFile $installer
 & $installer -Project
 ```
 
@@ -90,13 +90,58 @@ irm https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/inst
 
 | Bash | PowerShell | Default | Meaning |
 |---|---|---|---|
-| `--global` | *(default)* | ✓ | Install to `~/.claude/skills/` |
-| `--project` | `-Project` | | Install to `./.claude/skills/` |
-| `--dir PATH` | `-Dir PATH` | | Install to a custom `…/.claude/skills/` parent |
-| `--ref REF` | `-Ref REF` | `main` | Git ref (branch/tag/sha) to download from |
-| `--force` | `-Force` | | Overwrite an existing install without prompting |
-| `--uninstall` | `-Uninstall` | | Remove the install (honours scope flags) |
-| `-h` / `--help` | `Get-Help .\install.ps1` | | Show usage |
+| `--tool TOOL` | `-Tool TOOL` | `claude` | Target AI tool. See `--list-tools` for the full list. Use `all` to install for every tool. |
+| `--global` | `-Global` | ✓ *(Claude only)* | Install Claude into `~/.claude/skills/`. Rejected for non-Claude tools — they're always project-scoped. |
+| `--project` | `-Project` | ✓ *(non-Claude)* | Install into the current directory's project root. |
+| `--dir PATH` | `-Dir PATH` | | Override the project root the adapter is deployed into. |
+| `--ref REF` | `-Ref REF` | `main` | Git ref (branch/tag/sha) to download from. |
+| `--force` | `-Force` | | Overwrite existing files without prompting. |
+| `--uninstall` | `-Uninstall` | | Remove the install (honours `--tool` and scope flags). |
+| `--list-tools` | `-ListTools` | | Print the supported AI tools table and exit. |
+| `-h` / `--help` | `Get-Help .\install.ps1` | | Show usage. |
+
+### Installing for a specific AI tool
+
+The pre-flight gate ships in the **native rule/instruction format** for each supported AI tool. The installer's `--tool` flag picks the right adapter and deploy path.
+
+| Tool | Bash flag | PowerShell flag | Deploys |
+|------|-----------|-----------------|---------|
+| Claude Code | `--tool claude` *(default)* | `-Tool claude` | `SKILL.md` + script under `.claude/skills/pre-flight-check/` |
+| OpenAI Codex / generic AGENTS.md agents | `--tool codex` | `-Tool codex` | `AGENTS.md` at repo root + script under `.pre-flight-check/scripts/` |
+| Gemini CLI | `--tool gemini` | `-Tool gemini` | `GEMINI.md` + `gemini-extension.json` at repo root + script |
+| Cursor | `--tool cursor` | `-Tool cursor` | `.cursor/rules/pre-flight-check.mdc` + script |
+| GitHub Copilot | `--tool copilot` | `-Tool copilot` | `.github/copilot-instructions.md` + script |
+| Windsurf | `--tool windsurf` | `-Tool windsurf` | `.windsurf/rules/pre-flight-check.md` + script |
+| Cline | `--tool cline` | `-Tool cline` | `.clinerules/pre-flight-check.md` + script |
+| Kiro | `--tool kiro` | `-Tool kiro` | `.kiro/steering/pre-flight-check.md` + script |
+| Roo Code | `--tool roo` | `-Tool roo` | `.roo/rules/pre-flight-check.md` + script |
+| Agent Skills standard | `--tool agents-skills` | `-Tool agents-skills` | `.agents/skills/pre-flight-check/SKILL.md` + script |
+| **All of the above** | `--tool all` | `-Tool all` | Deploys every adapter file into the current project |
+
+**Example — install for Cursor in this project:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash -s -- --tool cursor --project
+```
+
+**Example — install for every supported tool in the current monorepo:**
+
+```bash
+bash install.sh --tool all --project
+```
+
+> **One pipeline engine, many entry points.** Whichever combination of tools you install for, the same `run-pipeline.py` runs the same gates. Claude looks for the script under `.claude/skills/`; everything else looks under `.pre-flight-check/scripts/`. The installer keeps both copies in sync if you've installed multiple tools.
+
+### `--global` is Claude-only
+
+`--global` (`-Global`) deploys to `~/.claude/skills/` — that path is specific to Claude Code's skill discovery. For every other tool, the adapter file has to live in the project repo (Cursor reads `.cursor/rules/` from the workspace, Windsurf reads `.windsurf/rules/` from the workspace, etc.). The installer enforces this:
+
+```bash
+bash install.sh --tool cursor --global
+# ✗  --global is only supported for --tool claude. Use --project or --dir for cursor.
+```
+
+If you want a "global" install for non-Claude tools, install per-project and consider checking the adapter files into git so teammates get them on clone.
 
 ---
 
@@ -105,7 +150,7 @@ irm https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/inst
 Best for offline boxes, air-gapped environments, or when you want to read the code before running it.
 
 ```bash
-git clone https://github.com/mirekondro1/The-Pre-Flight-Check.git
+git clone https://github.com/mirekondro/The-Pre-Flight-Check.git
 cd The-Pre-Flight-Check
 bash install.sh --global        # or --project, --dir PATH, etc.
 ```
@@ -119,7 +164,7 @@ The installer detects it's running from a clone and copies files locally — no 
 If you don't trust scripts and want to do it yourself, the skill is just two files:
 
 ```bash
-git clone https://github.com/mirekondro1/The-Pre-Flight-Check.git
+git clone https://github.com/mirekondro/The-Pre-Flight-Check.git
 mkdir -p ~/.claude/skills                                    # or ./.claude/skills for project-local
 cp -r The-Pre-Flight-Check/skills/pre-flight-check ~/.claude/skills/
 chmod +x ~/.claude/skills/pre-flight-check/scripts/run-pipeline.py
@@ -135,11 +180,11 @@ The default `--ref main` tracks `main` — good for "always latest." For reprodu
 
 ```bash
 # Pin to a release tag
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/v1.0.0/install.sh \
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/v1.0.0/install.sh \
   | bash -s -- --ref v1.0.0
 
 # Pin to a specific commit
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/3592de9/install.sh \
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/3592de9/install.sh \
   | bash -s -- --ref 3592de9
 ```
 
@@ -187,11 +232,11 @@ Just re-run the installer with `--force`:
 
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.sh | bash -s -- --force
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash -s -- --force
 
 # Windows
 $installer = "$env:TEMP\preflight-install.ps1"
-irm https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.ps1 -OutFile $installer
+irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 -OutFile $installer
 & $installer -Force
 ```
 
@@ -205,7 +250,7 @@ The skill is two files; the upgrade is two file overwrites. Your project tooling
 
 ```bash
 # macOS / Linux
-curl -fsSL https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/uninstall.sh | bash
 
 # Or from a clone
 bash uninstall.sh
@@ -221,7 +266,7 @@ bash uninstall.sh --project   # from clone, in the project root
 
 ```powershell
 $installer = "$env:TEMP\preflight-install.ps1"
-irm https://raw.githubusercontent.com/mirekondro1/The-Pre-Flight-Check/main/install.ps1 -OutFile $installer
+irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 -OutFile $installer
 & $installer -Uninstall          # or -Uninstall -Project
 ```
 
@@ -324,4 +369,4 @@ The installer uses `curl` (Bash) / `Invoke-WebRequest` (PowerShell). Both honour
 
 ### Still stuck
 
-Open an issue: [github.com/mirekondro1/The-Pre-Flight-Check/issues](https://github.com/mirekondro1/The-Pre-Flight-Check/issues). Include: OS + version, `python3 --version`, `claude --version`, the exact command you ran, and the full output.
+Open an issue: [github.com/mirekondro/The-Pre-Flight-Check/issues](https://github.com/mirekondro/The-Pre-Flight-Check/issues). Include: OS + version, `python3 --version`, `claude --version`, the exact command you ran, and the full output.
