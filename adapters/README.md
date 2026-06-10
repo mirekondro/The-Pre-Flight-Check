@@ -6,17 +6,38 @@ contains the source file(s) for one tool. The installer (`install.sh` /
 
 | Directory | Tool | Deployed to | Format |
 |-----------|------|-------------|--------|
-| `cursor/` | [Cursor](https://cursor.com) | `.cursor/rules/pre-flight-check.mdc` | Cursor Rules (MDC frontmatter) |
+| `cursor/` | [Cursor](https://cursor.com) | `.cursor/rules/pre-flight-check.mdc` | Cursor Rules (MDC frontmatter, `alwaysApply: true`) |
 | `copilot/` | [GitHub Copilot](https://github.com/features/copilot) | `.github/copilot-instructions.md` | Markdown (no frontmatter) |
-| `windsurf/` | [Windsurf](https://windsurf.com) | `.windsurf/rules/pre-flight-check.md` | Markdown (YAML frontmatter: `trigger: always_on`) |
+| `windsurf/` | [Windsurf](https://windsurf.com) | `.windsurf/rules/pre-flight-check.md` | Markdown (YAML frontmatter, `trigger: always_on`) |
 | `cline/` | [Cline](https://cline.bot) | `.clinerules/pre-flight-check.md` | Markdown (no frontmatter = always active) |
+| `kiro/` | [Kiro](https://kiro.dev) | `.kiro/steering/pre-flight-check.md` | Markdown (YAML frontmatter, `inclusion: always`) |
+| `roo/` | [Roo Code](https://roocode.com) | `.roo/rules/pre-flight-check.md` | Markdown (no frontmatter) |
+| *(see below)* | [Agent Skills standard](https://agentskills.io) | `.agents/skills/pre-flight-check/` | Copy of `skills/pre-flight-check/` (cross-tool alias) |
 
-## Claude Code and AGENTS.md / GEMINI.md
+## Special cases
+
+### Claude Code, AGENTS.md, GEMINI.md
 
 - **Claude Code:** uses `skills/pre-flight-check/` (deployed to `.claude/skills/`). See [skills/pre-flight-check/SKILL.md](../skills/pre-flight-check/SKILL.md).
-- **Codex / generic agents:** `AGENTS.md` at repo root.
+- **Codex / generic agents that read AGENTS.md:** `AGENTS.md` at repo root.
 - **Gemini CLI:** `GEMINI.md` at repo root + `gemini-extension.json`.
-- **Kiro / Roo / `.agents/skills/` agents:** Part F — ships as a shared `SKILL.md` in `.agents/skills/pre-flight-check/`.
+
+### `.agents/skills/` — cross-tool interop tier
+
+The [Agent Skills standard](https://agentskills.io) defines `.agents/skills/<name>/SKILL.md` as a tool-neutral discovery path. Gemini CLI, future Codex tooling, and any other Agent Skills-compatible agent will load skills from there.
+
+**There is no `adapters/agents/` directory.** The installer copies the canonical [`skills/pre-flight-check/`](../skills/pre-flight-check/) verbatim to `.agents/skills/pre-flight-check/`. One source, two install paths — no drift.
+
+### Tools that read AGENTS.md as a fallback
+
+These tools recognize a root-level `AGENTS.md` even if their native adapter isn't installed:
+
+- GitHub Copilot Coding Agent
+- Windsurf (Cascade)
+- Kiro
+- Codex / Codex CLI
+
+That means **shipping `AGENTS.md` alone gives users baseline coverage across the entire ecosystem.** The native adapters are the polished UX layer on top of that baseline.
 
 ## Adapter content principle
 
