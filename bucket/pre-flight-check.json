@@ -5,7 +5,7 @@
     "license": "MIT",
     "depends": "python",
     "url": "https://github.com/mirekondro/The-Pre-Flight-Check/releases/download/v1.2.0/pre_flight_check-1.2.0-py3-none-any.whl#/dl.whl",
-    "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hash": "sha256:7fd7cd24edb072c12566e809c5f0bc944a2984e899b758183d219db1b4d1d96c",
     "installer": {
         "script": [
             "Write-Host 'Installing pre-flight-check wheel into Scoop app dir...'",
