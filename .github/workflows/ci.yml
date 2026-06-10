@@ -42,6 +42,73 @@ jobs:
         run: mypy --strict --python-version 3.8 skills/pre-flight-check/scripts/run-pipeline.py
 
   # ---------------------------------------------------------------------------
+  # Lint the pre_flight_check Python package (the pipx-installable wrapper).
+  # Package requires Python ≥3.9 because it uses importlib.resources.files().
+  # ---------------------------------------------------------------------------
+  package-lint:
+    name: Package lint (ruff + mypy on src/pre_flight_check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Install lint tools
+        run: pip install --quiet "ruff==0.6.*" "mypy==1.11.*"
+      - name: ruff
+        run: ruff check src/pre_flight_check/
+      - name: mypy
+        run: mypy --strict --python-version 3.9 src/pre_flight_check/
+
+  # ---------------------------------------------------------------------------
+  # Build the wheel, install it, and round-trip the CLI in a temp project.
+  # ---------------------------------------------------------------------------
+  package-smoke:
+    name: Package build + pipx round-trip (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install build tooling
+        run: pip install --quiet build
+      - name: Build wheel + sdist
+        run: python -m build --wheel --sdist --outdir dist
+      - name: Install the wheel
+        shell: bash
+        run: pip install dist/*.whl
+      - name: pre-flight-check --version
+        run: pre-flight-check --version
+      - name: pre-flight-check list-tools
+        run: pre-flight-check list-tools
+      - name: init --tool all into temp dir
+        shell: bash
+        run: |
+          TMP=$(mktemp -d)
+          cd "$TMP"
+          pre-flight-check init --tool all --project --force
+          test -f .claude/skills/pre-flight-check/SKILL.md
+          test -f AGENTS.md
+          test -f .cursor/rules/pre-flight-check.mdc
+          echo "TMP=$TMP" >> "$GITHUB_ENV"
+      - name: uninstall --tool all + verify clean
+        shell: bash
+        run: |
+          cd "$TMP"
+          pre-flight-check uninstall --tool all --project
+          remaining=$(find "$TMP" -mindepth 1 -type f | wc -l | tr -d ' ')
+          if [ "$remaining" != "0" ]; then
+            echo "::error::$remaining file(s) left after uninstall"
+            find "$TMP" -mindepth 1 -type f
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
   # ShellCheck for installers.
   # ---------------------------------------------------------------------------
   shellcheck:
