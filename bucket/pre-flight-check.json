@@ -1,0 +1,32 @@
+{
+    "version": "1.2.0",
+    "description": "Fail-fast quality gate for AI coding agents (Typecheck → Lint → Test → Security Audit). Stops the agent declaring 'done' on broken code.",
+    "homepage": "https://github.com/mirekondro/The-Pre-Flight-Check",
+    "license": "MIT",
+    "depends": "python",
+    "url": "https://github.com/mirekondro/The-Pre-Flight-Check/releases/download/v1.2.0/pre_flight_check-1.2.0-py3-none-any.whl#/dl.whl",
+    "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "installer": {
+        "script": [
+            "Write-Host 'Installing pre-flight-check wheel into Scoop app dir...'",
+            "python -m pip install --quiet --upgrade --no-deps --prefix \"$dir\\app\" \"$dir\\dl.whl\"",
+            "Remove-Item \"$dir\\dl.whl\" -Force"
+        ]
+    },
+    "bin": "app\\Scripts\\pre-flight-check.exe",
+    "env_add_path": "app\\Scripts",
+    "uninstaller": {
+        "script": [
+            "Remove-Item \"$dir\\app\" -Recurse -Force -ErrorAction SilentlyContinue"
+        ]
+    },
+    "checkver": {
+        "github": "https://github.com/mirekondro/The-Pre-Flight-Check"
+    },
+    "autoupdate": {
+        "url": "https://github.com/mirekondro/The-Pre-Flight-Check/releases/download/v$version/pre_flight_check-$version-py3-none-any.whl#/dl.whl",
+        "hash": {
+            "url": "$url.sha256"
+        }
+    }
+}
