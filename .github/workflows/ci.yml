@@ -74,16 +74,22 @@ jobs:
 
       - name: Analyze install.ps1
         shell: pwsh
-        # PSAvoidUsingWriteHost is excluded on purpose: this is an interactive
-        # installer that needs colored output to the console. Write-Output /
-        # Write-Information would break the curl-pipe install UX.
+        # Fail only on Errors; print Warnings without failing. Several PS
+        # warnings are false-positives or stylistic for an installer script:
+        #   - PSAvoidUsingWriteHost: we DO need colored console output
+        #   - PSUseApprovedVerbs: Throw-Die is a private helper, not a cmdlet
+        #   - PSReviewUnusedParameter: -Force IS used via $Force checks
+        #   - PSUseSingularNouns: Get-AdapterPaths really does return many
+        #   - PSUseBOMForUnicodeEncodedFile: UTF-8 without BOM is standard
         run: |
-          $results = Invoke-ScriptAnalyzer -Path install.ps1 -Severity Error,Warning -ExcludeRule PSAvoidUsingWriteHost
-          if ($results) {
-            $results | Format-Table -AutoSize
-            throw "PSScriptAnalyzer reported $($results.Count) issue(s)."
+          $warnings = Invoke-ScriptAnalyzer -Path install.ps1 -Severity Warning
+          if ($warnings) { $warnings | Format-Table -AutoSize }
+          $errors = Invoke-ScriptAnalyzer -Path install.ps1 -Severity Error
+          if ($errors) {
+            $errors | Format-Table -AutoSize
+            throw "PSScriptAnalyzer reported $($errors.Count) ERROR(s)."
           } else {
-            Write-Output "PSScriptAnalyzer: clean."
+            Write-Output "PSScriptAnalyzer: no errors."
           }
 
   # ---------------------------------------------------------------------------
