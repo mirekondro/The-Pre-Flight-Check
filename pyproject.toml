@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pre-flight-check"
+version = "1.2.0"
+description = "Fail-fast quality gate for AI coding agents: Typecheck → Lint → Test → Security Audit. Stops the agent declaring 'done' on broken code."
+readme = "README.md"
+# Package requires 3.9+ because we use importlib.resources.files() to read
+# bundled adapter files. The pipeline engine itself (run-pipeline.py) is
+# 3.8-compatible — install via the curl/PowerShell installer if you need 3.8.
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "mirekondro", email = "mirekondro@post.cz" }]
+keywords = [
+  "ai-agents", "claude-code", "codex", "gemini", "cursor", "copilot",
+  "quality-gate", "ci", "linting", "typechecking", "testing",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+  "Typing :: Typed",
+]
+# Engine has zero runtime dependencies on purpose.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/mirekondro/The-Pre-Flight-Check"
+Documentation = "https://github.com/mirekondro/The-Pre-Flight-Check/blob/main/INSTALL.md"
+Repository = "https://github.com/mirekondro/The-Pre-Flight-Check"
+Issues = "https://github.com/mirekondro/The-Pre-Flight-Check/issues"
+Changelog = "https://github.com/mirekondro/The-Pre-Flight-Check/releases"
+
+[project.scripts]
+pre-flight-check = "pre_flight_check.cli:main"
+
+# ---------- hatch build config ----------
+[tool.hatch.build.targets.wheel]
+packages = ["src/pre_flight_check"]
+
+# Bundle the canonical adapter files into the wheel at build time. This is the
+# single source of truth: there is no duplicated copy in the repo. Hatch reads
+# from the project root and writes into the package's _data/ directory.
+[tool.hatch.build.targets.wheel.force-include]
+"skills/pre-flight-check/SKILL.md"                  = "pre_flight_check/_data/SKILL.md"
+"skills/pre-flight-check/scripts/run-pipeline.py"   = "pre_flight_check/_data/run-pipeline.py"
+"AGENTS.md"                                         = "pre_flight_check/_data/AGENTS.md"
+"GEMINI.md"                                         = "pre_flight_check/_data/GEMINI.md"
+"gemini-extension.json"                             = "pre_flight_check/_data/gemini-extension.json"
+"adapters/cursor/pre-flight-check.mdc"              = "pre_flight_check/_data/cursor.mdc"
+"adapters/copilot/copilot-instructions.md"          = "pre_flight_check/_data/copilot-instructions.md"
+"adapters/windsurf/pre-flight-check.md"             = "pre_flight_check/_data/windsurf.md"
+"adapters/cline/pre-flight-check.md"                = "pre_flight_check/_data/cline.md"
+"adapters/kiro/pre-flight-check.md"                 = "pre_flight_check/_data/kiro.md"
+"adapters/roo/pre-flight-check.md"                  = "pre_flight_check/_data/roo.md"
+
+# Same for the sdist (PyPI source distribution).
+[tool.hatch.build.targets.sdist.force-include]
+"skills/pre-flight-check/SKILL.md"                  = "src/pre_flight_check/_data/SKILL.md"
+"skills/pre-flight-check/scripts/run-pipeline.py"   = "src/pre_flight_check/_data/run-pipeline.py"
+"AGENTS.md"                                         = "src/pre_flight_check/_data/AGENTS.md"
+"GEMINI.md"                                         = "src/pre_flight_check/_data/GEMINI.md"
+"gemini-extension.json"                             = "src/pre_flight_check/_data/gemini-extension.json"
+"adapters/cursor/pre-flight-check.mdc"              = "src/pre_flight_check/_data/cursor.mdc"
+"adapters/copilot/copilot-instructions.md"          = "src/pre_flight_check/_data/copilot-instructions.md"
+"adapters/windsurf/pre-flight-check.md"             = "src/pre_flight_check/_data/windsurf.md"
+"adapters/cline/pre-flight-check.md"                = "src/pre_flight_check/_data/cline.md"
+"adapters/kiro/pre-flight-check.md"                 = "src/pre_flight_check/_data/kiro.md"
+"adapters/roo/pre-flight-check.md"                  = "src/pre_flight_check/_data/roo.md"
