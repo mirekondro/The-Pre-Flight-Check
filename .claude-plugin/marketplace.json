@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "pre-flight-check",
+  "description": "Stop your AI agent from declaring 'done' on broken code. Fail-fast quality gate that runs Typecheck, Lint, Test, and Security Audit sequentially before any task is marked complete.",
+  "owner": {
+    "name": "mirekondro",
+    "url": "https://github.com/mirekondro"
+  },
+  "plugins": [
+    {
+      "name": "pre-flight-check",
+      "description": "Fail-fast Typecheck → Lint → Test → Security Audit gate. Auto-detects Node.js and Python. Forbids the agent from suppressing errors. Zero runtime dependencies.",
+      "source": "./",
+      "category": "quality"
+    }
+  ]
+}
