@@ -101,7 +101,7 @@ fi
 # ---------- existing install ----------
 if [ -d "$DEST" ] && [ "$FORCE" -ne 1 ]; then
   if [ -t 0 ]; then
-    printf "${C_YELLOW}?${C_RESET}  ${DEST} exists. Overwrite? [y/N] "
+    printf "%s?%s  %s exists. Overwrite? [y/N] " "$C_YELLOW" "$C_RESET" "$DEST"
     read -r REPLY
     case "$REPLY" in
       y|Y|yes|YES) : ;;

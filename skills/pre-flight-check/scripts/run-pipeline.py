@@ -16,9 +16,15 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 
 MAX_CONTEXT_CHARS = 4000
+
+
+class Stage(TypedDict):
+    name: str
+    cmd: list[str]
 
 
 def which(cmd: str) -> bool:
@@ -43,7 +49,7 @@ def detect_node_pm(cwd: Path) -> str:
     return "npm"
 
 
-def package_json_scripts(cwd: Path) -> dict:
+def package_json_scripts(cwd: Path) -> dict[str, str]:
     pj = cwd / "package.json"
     if not pj.is_file():
         return {}
@@ -51,7 +57,9 @@ def package_json_scripts(cwd: Path) -> dict:
         with pj.open("r", encoding="utf-8") as f:
             data = json.load(f)
         scripts = data.get("scripts") or {}
-        return scripts if isinstance(scripts, dict) else {}
+        if not isinstance(scripts, dict):
+            return {}
+        return {str(k): str(v) for k, v in scripts.items()}
     except (json.JSONDecodeError, OSError):
         return {}
 
@@ -90,10 +98,10 @@ def pm_exec(pm: str, binary: str, *args: str) -> list[str]:
     return ["pnpm", "exec", binary, *args]
 
 
-def build_node_stages(cwd: Path) -> list[dict]:
+def build_node_stages(cwd: Path) -> list[Stage]:
     pm = detect_node_pm(cwd)
     scripts = package_json_scripts(cwd)
-    stages: list[dict] = []
+    stages: list[Stage] = []
 
     # Typecheck
     if "typecheck" in scripts:
@@ -142,9 +150,9 @@ def python_runner(cwd: Path) -> list[str]:
     return []
 
 
-def build_python_stages(cwd: Path) -> list[dict]:
+def build_python_stages(cwd: Path) -> list[Stage]:
     runner = python_runner(cwd)
-    stages: list[dict] = []
+    stages: list[Stage] = []
 
     def wrap(tool: str, *args: str) -> list[str] | None:
         if runner:
@@ -209,7 +217,7 @@ def cmd_to_str(cmd: list[str]) -> str:
     return " ".join(parts)
 
 
-def run_stage(stage: dict) -> tuple[int, str, str]:
+def run_stage(stage: Stage) -> tuple[int, str, str]:
     cmd = stage["cmd"]
     try:
         proc = subprocess.run(
