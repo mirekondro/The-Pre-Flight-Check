@@ -11,9 +11,11 @@ Subcommands:
 from __future__ import annotations
 
 import argparse
+import io
 import sys
 from pathlib import Path
 from typing import List, Optional
+
 
 from . import __version__
 from .engine import run as engine_run
@@ -23,6 +25,23 @@ from .installer import (
     resolve_target,
     uninstall_tool,
 )
+
+
+def _ensure_utf8_stdout() -> None:
+    """Re-wrap stdout/stderr as UTF-8 on Windows where cp1252 is the default.
+
+    Lets us print ✓ and ✗ without UnicodeEncodeError on any active code page.
+    errors='replace' ensures we never crash on exotic chars.
+    """
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name)
+        enc = getattr(stream, "encoding", "utf-8") or "utf-8"
+        if hasattr(stream, "buffer") and enc.lower().replace("-", "") not in ("utf8", "utf8sig"):
+            setattr(
+                sys,
+                stream_name,
+                io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace"),
+            )
 
 
 _TOOL_DESCRIPTIONS = {
@@ -173,6 +192,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    _ensure_utf8_stdout()
     parser = _build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

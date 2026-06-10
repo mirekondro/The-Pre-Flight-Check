@@ -304,23 +304,28 @@ jobs:
           test -x .claude/skills/pre-flight-check/scripts/run-pipeline.py
           echo "OK: skill files in place"
 
-      - name: Run pipeline (expect UNKNOWN RUNTIME at repo root)
+      - name: Run pipeline (expect PRE-FLIGHT SKIPPED in empty temp dir)
         id: run
         run: |
+          # Run from a truly empty temp dir — no pyproject.toml, no package.json.
+          # The repo root now has pyproject.toml (Python package), so the
+          # pipeline would detect Python runtime there. An empty dir guarantees
+          # the UNKNOWN RUNTIME branch fires.
+          EMPTY=$(mktemp -d)
+          SCRIPT="$GITHUB_WORKSPACE/.claude/skills/pre-flight-check/scripts/run-pipeline.py"
           set +e
-          out="$(python3 .claude/skills/pre-flight-check/scripts/run-pipeline.py 2>&1)"
+          out="$(cd "$EMPTY" && python3 "$SCRIPT" 2>&1)"
           rc=$?
           set -e
           echo "$out"
           echo "exit: $rc"
-          # Repo root has no package.json/pyproject.toml at the top level →
-          # detector returns UNKNOWN and exits 1. That's the expected state.
+          rm -rf "$EMPTY"
           if [ "$rc" != "1" ]; then
-            echo "::error::Expected exit 1 (UNKNOWN RUNTIME), got $rc"
+            echo "::error::Expected exit 1, got $rc"
             exit 1
           fi
           if ! echo "$out" | grep -q 'PRE-FLIGHT SKIPPED: UNKNOWN RUNTIME'; then
-            echo "::error::Output missing UNKNOWN RUNTIME skip block"
+            echo "::error::Output missing PRE-FLIGHT SKIPPED block"
             exit 1
           fi
           echo "OK: pipeline ran, exited 1 with UNKNOWN RUNTIME as expected."
