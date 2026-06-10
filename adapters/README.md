@@ -8,8 +8,8 @@ contains the source file(s) for one tool. The installer (`install.sh` /
 |-----------|------|-------------|--------|
 | `cursor/` | [Cursor](https://cursor.com) | `.cursor/rules/pre-flight-check.mdc` | Cursor Rules (MDC frontmatter) |
 | `copilot/` | [GitHub Copilot](https://github.com/features/copilot) | `.github/copilot-instructions.md` | Markdown (no frontmatter) |
-| `windsurf/` | [Windsurf](https://codeium.com/windsurf) | `.windsurfrules` | Markdown |
-| `cline/` | [Cline](https://github.com/cline/cline) | `.clinerules` | Markdown |
+| `windsurf/` | [Windsurf](https://windsurf.com) | `.windsurf/rules/pre-flight-check.md` | Markdown (YAML frontmatter: `trigger: always_on`) |
+| `cline/` | [Cline](https://cline.bot) | `.clinerules/pre-flight-check.md` | Markdown (no frontmatter = always active) |
 
 ## Claude Code and AGENTS.md / GEMINI.md
 
