@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/mirekondro1/The-Pre-Flight-Check#readme
+    about: Install guide, supported runtimes, FAQ.
+  - name: 🛠️ Troubleshooting
+    url: https://github.com/mirekondro1/The-Pre-Flight-Check/blob/main/INSTALL.md#troubleshooting
+    about: 9 common failure modes with copy-paste fixes. Check here before opening a bug report.
+  - name: 🤝 Contributing
+    url: https://github.com/mirekondro1/The-Pre-Flight-Check/blob/main/CONTRIBUTING.md
+    about: How to add a new runtime adapter, fixture, or doc fix.

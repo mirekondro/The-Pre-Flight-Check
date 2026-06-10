@@ -1,0 +1,82 @@
+name: 💡 Feature request
+description: Propose a new capability before opening a PR.
+title: "[feat] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read [CONTRIBUTING.md → Project philosophy](../blob/main/CONTRIBUTING.md#project-philosophy) before filing. **Especially** the "What we don't want" list — proposals for new dependencies, config files, or auto-installing tools will be declined.
+
+        New runtime adapters and new fixtures are welcome and rarely need long discussion. Behavioral changes to existing stages or to the failure-block format need agreement first.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user-visible problem does this solve? Be concrete — name a real workflow.
+      placeholder: |
+        I work in a Go monorepo. `pre-flight-check` exits with UNKNOWN RUNTIME so my agent skips quality gates entirely.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What change do you want? Include the expected command(s) per stage if it's a new runtime.
+      placeholder: |
+        Add a Go adapter that detects `go.mod` and runs:
+          1. TYPECHECK     -> go vet ./...
+          2. LINT          -> golangci-lint run
+          3. TEST          -> go test ./...
+          4. SECURITY AUDIT -> govulncheck ./...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else could solve the problem? Why is your proposal better?
+      placeholder: |
+        - Manually invoking each tool from a Makefile: doesn't enforce the agent contract.
+        - Project-local skill fork: works but doesn't help anyone else.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - New runtime adapter
+        - New stage / tool for an existing runtime
+        - Failure-block format change
+        - Installer change
+        - Documentation
+        - New fixture
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope check
+      description: |
+        Tick whichever apply. Honesty saves us both time.
+      value: |
+        - [ ] This adds **no** Python runtime dependencies.
+        - [ ] This adds **no** configuration file.
+        - [ ] This does **not** install third-party tooling on behalf of the user.
+        - [ ] This does **not** change the failure-block Markdown shape (### ❌ FAILURE, **Command Executed:**, **Context for AI Fix:**).
+        - [ ] I'm willing to send the PR if accepted.
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I read CONTRIBUTING.md and my proposal aligns with the project philosophy.
+          required: true
+        - label: I searched existing issues and didn't find a duplicate or rejected version of this.
+          required: true

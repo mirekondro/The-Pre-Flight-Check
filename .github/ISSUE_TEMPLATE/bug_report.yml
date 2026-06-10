@@ -1,0 +1,105 @@
+name: 🐛 Bug report
+description: Something doesn't work as documented.
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. The more concrete you can be, the faster this gets fixed. Paste raw output rather than describing it.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Tell us what you ran and what you saw. One paragraph is fine.
+      placeholder: |
+        I ran `python3 ~/.claude/skills/pre-flight-check/scripts/run-pipeline.py` in a pnpm monorepo and it picked npm instead of pnpm.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      placeholder: |
+        Detect pnpm-lock.yaml at the root, use `pnpm` for all stages.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Exact commands. If you can pin it to one of the fixtures under `examples/`, even better.
+      render: bash
+      placeholder: |
+        cd ~/projects/my-repo
+        python3 ~/.claude/skills/pre-flight-check/scripts/run-pipeline.py
+    validations:
+      required: true
+
+  - type: textarea
+    id: full-output
+    attributes:
+      label: Full pipeline output
+      description: Everything from the first `# Pre-Flight Check` line through the final `### ❌` / `### ✅` / `### ⚠️` block. Paste raw, do not summarise.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS + version
+      placeholder: macOS 14.5 / Ubuntu 22.04 / Windows 11
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python3 --version`.
+      placeholder: Python 3.11.7
+    validations:
+      required: true
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`. Optional if unsure.
+      placeholder: claude 1.x.x
+
+  - type: input
+    id: skill-version
+    attributes:
+      label: Skill version / commit
+      description: First line of `~/.claude/skills/pre-flight-check/scripts/run-pipeline.py`, or the commit sha you installed from.
+      placeholder: main @ 3592de9
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: How did you install the skill?
+      options:
+        - One-line install (curl|bash)
+        - One-line install (irm|iex)
+        - Local clone + install.sh
+        - Manual cp
+        - Other (describe in "What happened?")
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
+        - label: I'm running Python ≥3.8.
+          required: true
+        - label: The output above is raw, complete, and unredacted (modulo absolute paths you'd rather not share).
+          required: true
