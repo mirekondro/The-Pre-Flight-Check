@@ -1,0 +1,6 @@
+{
+  "name": "pre-flight-check",
+  "description": "Fail-fast quality gate pipeline (Typecheck → Lint → Test → Security Audit) that runs before any task is declared done or code is committed. Auto-detects Node.js and Python projects.",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md"
+}
