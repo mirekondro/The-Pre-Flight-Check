@@ -71,9 +71,6 @@ scoop install pre-flight-check
 pipx install pre-flight-check
 ```
 
-> Until v1.2.0 is published to PyPI, install from source:
-> `pipx install git+https://github.com/mirekondro/The-Pre-Flight-Check.git`
-
 </details>
 
 <details>
