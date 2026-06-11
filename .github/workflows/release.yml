@@ -1,0 +1,116 @@
+name: Release
+
+# Tag a version (vX.Y.Z) and this builds the wheel + sdist, verifies they are
+# PyPI-acceptable, attaches them (with sha256 checksums) to the GitHub release,
+# and publishes to PyPI via Trusted Publishing (OIDC — no API token secret).
+#
+# One-time PyPI setup (cannot be automated):
+#   https://pypi.org/manage/account/publishing/  → add a "pending publisher":
+#     PyPI project name: pre-flight-check
+#     Owner:             mirekondro
+#     Repository:        The-Pre-Flight-Check
+#     Workflow name:     release.yml
+#     Environment:       pypi
+#
+# After that, `git tag vX.Y.Z && git push origin vX.Y.Z` ships every channel.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build and publish, e.g. v1.2.0"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build the distributions once and verify PyPI will accept them.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build + verify distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tooling
+        run: pip install --quiet build twine
+
+      - name: Build wheel + sdist
+        run: python -m build --wheel --sdist --outdir dist
+
+      - name: Verify distributions are PyPI-acceptable
+        run: python -m twine check dist/*
+
+      - name: Generate sha256 checksums
+        run: |
+          cd dist
+          for f in *; do sha256sum "$f" | awk '{print $1}' > "$f.sha256"; done
+          ls -la
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Attach the built artifacts (+ checksums) to the GitHub release.
+  # ---------------------------------------------------------------------------
+  github-release:
+    name: Attach artifacts to GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Create or update the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: dist/*
+
+  # ---------------------------------------------------------------------------
+  # Publish to PyPI via Trusted Publishing. No secret — OIDC proves identity.
+  # The `pypi` environment must match the pending publisher configured on PyPI.
+  # ---------------------------------------------------------------------------
+  pypi-publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pre-flight-check
+    permissions:
+      id-token: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Drop checksum files (PyPI rejects non-distribution files)
+        run: rm -f dist/*.sha256
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

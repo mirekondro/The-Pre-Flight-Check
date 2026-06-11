@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned versions current (security + bug fixes).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+
+  # The engine has zero runtime deps, but the package build backend and any
+  # future dev tooling declared in pyproject.toml are watched here.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "build"
+    labels:
+      - "dependencies"

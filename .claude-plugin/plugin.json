@@ -1,5 +1,6 @@
 {
   "name": "pre-flight-check",
+  "version": "1.2.0",
   "description": "Fail-fast quality gate (Typecheck → Lint → Test → Security Audit) that runs before any task is declared done or code is committed. Auto-detects Node.js and Python projects.",
   "author": {
     "name": "mirekondro",
