@@ -114,6 +114,10 @@ jobs:
 
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Re-runs (e.g. to verify the tap sync) won't fail when a version is
+          # already on PyPI — duplicate files are skipped instead of erroring.
+          skip-existing: true
 
   # ---------------------------------------------------------------------------
   # Bump the Homebrew formula + Scoop bucket to the new version/checksums and
