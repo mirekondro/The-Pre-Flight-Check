@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<style>
+  /* 1280x640 GitHub social preview card — matches site design tokens */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; }
+  body {
+    font-family: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: #0d1426;
+    color: #fff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 64px 80px 56px;
+  }
+  /* glow accents */
+  body::before, body::after {
+    content: ""; position: absolute; border-radius: 50%; filter: blur(110px); z-index: 0;
+  }
+  body::before { width: 560px; height: 560px; background: rgba(79,70,229,.32); top: -260px; right: -120px; }
+  body::after  { width: 480px; height: 480px; background: rgba(6,182,212,.20); bottom: -260px; left: -120px; }
+  .z { position: relative; z-index: 1; }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .mark {
+    width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4); font-size: 24px;
+  }
+  .name { font-size: 27px; font-weight: 800; letter-spacing: -.02em; }
+
+  h1 { font-size: 64px; font-weight: 800; letter-spacing: -.035em; line-height: 1.08; max-width: 1050px; }
+  .grad { background: linear-gradient(120deg, #818cf8, #22d3ee); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { margin-top: 22px; font-size: 26px; color: #9aa6c4; font-weight: 500; }
+  .sub b { color: #e7ecf6; font-weight: 600; }
+
+  .pipeline { display: flex; align-items: center; gap: 14px; }
+  .gate {
+    display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 21px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.13);
+    padding: 14px 22px; border-radius: 12px; color: #e7ecf6;
+  }
+  .no {
+    display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4); color: #fff; font-size: 15px; font-weight: 700;
+  }
+  .ok { background: rgba(34,197,94,.13); border-color: rgba(34,197,94,.4); color: #4ade80; }
+  .arr { color: #46527a; font-size: 24px; font-weight: 700; }
+
+  .foot { display: flex; align-items: center; justify-content: space-between; }
+  .cmd {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 21px; color: #4ade80;
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12);
+    padding: 13px 22px; border-radius: 11px;
+  }
+  .cmd .dollar { color: #46527a; margin-right: 10px; }
+  .tools { font-size: 19px; color: #6b7799; font-weight: 500; }
+</style>
+</head>
+<body>
+  <div class="brand z">
+    <div class="mark">✈</div>
+    <div class="name">pre-flight-check</div>
+  </div>
+
+  <div class="z">
+    <h1>Stop your AI agent from declaring <span class="grad">“done” on broken code.</span></h1>
+    <div class="sub">A fail-fast quality gate for <b>10 AI coding tools</b> · zero dependencies</div>
+  </div>
+
+  <div class="pipeline z">
+    <div class="gate"><span class="no">1</span>Typecheck</div><span class="arr">→</span>
+    <div class="gate"><span class="no">2</span>Lint</div><span class="arr">→</span>
+    <div class="gate"><span class="no">3</span>Test</div><span class="arr">→</span>
+    <div class="gate"><span class="no">4</span>Audit</div><span class="arr">→</span>
+    <div class="gate ok">✓ cleared</div>
+  </div>
+
+  <div class="foot z">
+    <div class="cmd"><span class="dollar">$</span>pipx install pre-flight-check</div>
+    <div class="tools">Claude Code · Cursor · Copilot · Codex · Gemini +5</div>
+  </div>
+</body>
+</html>
