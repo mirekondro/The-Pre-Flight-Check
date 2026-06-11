@@ -86,7 +86,12 @@ jobs:
         run: pre-flight-check --version
       - name: pre-flight-check list-tools
         run: pre-flight-check list-tools
-      - name: init --tool all into temp dir
+      # init + uninstall must share ONE bash step. mktemp -d resolves to a
+      # MSYS /tmp/... path on windows-latest Git Bash; that path cannot be
+      # re-entered from a fresh shell in a later step (no /tmp mount), which
+      # broke `cd "$TMP"` on Windows. Keeping both in one shell context avoids
+      # the cross-step path translation entirely.
+      - name: init + uninstall round-trip in temp dir
         shell: bash
         run: |
           TMP=$(mktemp -d)
@@ -95,11 +100,6 @@ jobs:
           test -f .claude/skills/pre-flight-check/SKILL.md
           test -f AGENTS.md
           test -f .cursor/rules/pre-flight-check.mdc
-          echo "TMP=$TMP" >> "$GITHUB_ENV"
-      - name: uninstall --tool all + verify clean
-        shell: bash
-        run: |
-          cd "$TMP"
           pre-flight-check uninstall --tool all --project
           remaining=$(find "$TMP" -mindepth 1 -type f | wc -l | tr -d ' ')
           if [ "$remaining" != "0" ]; then
