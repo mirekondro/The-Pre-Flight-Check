@@ -18,7 +18,9 @@ Auto-detects Node.js and Python. Works with [10 AI coding tools](#-supported-ai-
 
 <br>
 
-**[Install](#-install)** &nbsp;·&nbsp; **[How it works](#-how-it-works)** &nbsp;·&nbsp; **[Supported AI tools](#-supported-ai-tools)** &nbsp;·&nbsp; **[Full guide](INSTALL.md)**
+**[Website](https://mirekondro.github.io/The-Pre-Flight-Check/)** &nbsp;·&nbsp; **[Install](#-install)** &nbsp;·&nbsp; **[How it works](#-how-it-works)** &nbsp;·&nbsp; **[Supported AI tools](#-supported-ai-tools)** &nbsp;·&nbsp; **[Full guide](INSTALL.md)**
+
+> 🌐 The landing-page source now lives in [`site/`](site/) and auto-deploys to GitHub Pages.
 
 </div>
 
