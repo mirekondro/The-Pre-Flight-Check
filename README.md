@@ -50,7 +50,7 @@ Pick the install path that matches your platform.
 <summary><b>🍎 macOS · 🐧 Linux (Homebrew)</b></summary>
 
 ```bash
-brew tap mirekondro/pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check
+brew tap mirekondro/pre-flight-check
 brew install pre-flight-check
 ```
 
