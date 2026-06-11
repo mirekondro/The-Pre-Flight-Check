@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>pre-flight-check — Stop your AI agent from shipping broken code</title>
+<meta name="description" content="A universal quality gate that runs Typecheck → Lint → Test → Security Audit before your AI coding agent declares 'done'. Auto-detects Node.js and Python. Works with 10 AI coding tools." />
+
+<!-- Open Graph -->
+<meta property="og:title" content="pre-flight-check" />
+<meta property="og:description" content="Stop your AI coding agent from declaring 'done' on broken code. Typecheck → Lint → Test → Security Audit, before any task is marked complete." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mirekondro.github.io/The-Pre-Flight-Check/" />
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===== Nav ===== -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">✈</span>
+      <span class="brand-name">pre-flight-check</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#install">Install</a>
+      <a href="#tools">AI tools</a>
+      <a href="https://github.com/mirekondro/The-Pre-Flight-Check#readme" target="_blank" rel="noopener">Docs</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="https://pypi.org/project/pre-flight-check/" target="_blank" rel="noopener">PyPI</a>
+      <a class="btn btn-dark" href="https://github.com/mirekondro/The-Pre-Flight-Check" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<main id="top">
+<section class="hero">
+  <div class="wrap hero-inner">
+    <a class="pill" href="https://github.com/mirekondro/The-Pre-Flight-Check/releases" target="_blank" rel="noopener">
+      <span class="dot"></span> v1.2.0 · now on PyPI, Homebrew &amp; Scoop
+    </a>
+    <h1>Stop your AI agent from declaring<br><span class="grad">“done” on broken code.</span></h1>
+    <p class="lead">
+      A universal quality gate that runs <b>Typecheck → Lint → Test → Security Audit</b>
+      before any task is marked complete. Auto-detects Node.js and Python.
+      Works with <b>10 AI coding tools</b>. Zero runtime dependencies.
+    </p>
+
+    <div class="cmd" data-copy="pipx install pre-flight-check">
+      <code>pipx install pre-flight-check</code>
+      <button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button>
+    </div>
+
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#install">Get started</a>
+      <a class="btn btn-ghost" href="https://github.com/mirekondro/The-Pre-Flight-Check" target="_blank" rel="noopener">View on GitHub →</a>
+    </div>
+
+    <!-- Pipeline diagram -->
+    <div class="pipeline" aria-label="Pipeline: Typecheck, Lint, Test, Security Audit">
+      <div class="gate"><span class="gate-no">1</span>Typecheck</div>
+      <span class="arrow">→</span>
+      <div class="gate"><span class="gate-no">2</span>Lint</div>
+      <span class="arrow">→</span>
+      <div class="gate"><span class="gate-no">3</span>Test</div>
+      <span class="arrow">→</span>
+      <div class="gate"><span class="gate-no">4</span>Security&nbsp;Audit</div>
+      <span class="arrow">→</span>
+      <div class="gate gate-ok">✓ cleared</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Problem ===== -->
+<section class="band">
+  <div class="wrap split">
+    <div>
+      <h2 class="kick">The problem</h2>
+      <p class="big">
+        Your AI agent writes a function, watches it not throw at runtime, and
+        reports <i>“done”</i> — while <code>tsc</code> would have caught a type
+        error in 50&nbsp;ms, <code>eslint</code> would have flagged dead code,
+        and <code>pytest</code> would have failed three tests.
+      </p>
+      <p class="muted">
+        <code>pre-flight-check</code> closes that loop. One command, four gates,
+        structured failure output the agent <b>has to act on</b>. No more
+        “I’ve successfully implemented the feature!” while the build is on fire.
+      </p>
+    </div>
+    <div class="terminal">
+      <div class="term-bar"><span></span><span></span><span></span></div>
+      <pre class="term-body"><span class="c-red">### ❌ PRE-FLIGHT FAILURE: TYPECHECK</span>
+<span class="c-dim">**Command Executed:** `npx --no-install tsc --noEmit`</span>
+<span class="c-dim">**Context for AI Fix:**</span>
+
+src/auth/session.ts(42,18): error <span class="c-yellow">TS2345</span>:
+Argument of type 'string | undefined' is not
+assignable to parameter of type 'string'.</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Features ===== -->
+<section id="how" class="section">
+  <div class="wrap">
+    <h2 class="center">Built to be impossible to fake-pass</h2>
+    <p class="sub center">The agent reads the failure block and must fix the exact error before continuing.</p>
+    <div class="grid">
+      <article class="card">
+        <div class="ico">🔎</div>
+        <h3>Auto-detects your stack</h3>
+        <p>Reads <code>package.json</code>, <code>pyproject.toml</code>, lockfiles — then picks npm / pnpm / yarn automatically.</p>
+      </article>
+      <article class="card">
+        <div class="ico">🛑</div>
+        <h3>Fail-fast pipeline</h3>
+        <p>The first failing stage halts everything and exits <code>1</code>. No point linting code that doesn’t typecheck.</p>
+      </article>
+      <article class="card">
+        <div class="ico">🚫</div>
+        <h3>No escape hatches</h3>
+        <p>Bans <code>@ts-ignore</code>, <code># type: ignore</code>, deleting tests, and ignore-list edits. Green means fixed.</p>
+      </article>
+      <article class="card">
+        <div class="ico">🛠️</div>
+        <h3>Uses your own scripts</h3>
+        <p>If <code>package.json</code> defines <code>lint</code>, it runs <code>npm run lint</code> — your config, your rules.</p>
+      </article>
+      <article class="card">
+        <div class="ico">📦</div>
+        <h3>Zero dependencies</h3>
+        <p>The whole engine is one Python file with no runtime deps. Audit it in five minutes.</p>
+      </article>
+      <article class="card">
+        <div class="ico">🤖</div>
+        <h3>10 AI tools, one install</h3>
+        <p>Claude, Codex, Gemini, Cursor, Copilot, Windsurf, Cline, Kiro, Roo, and the Agent Skills standard.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== What it checks ===== -->
+<section class="section alt">
+  <div class="wrap">
+    <h2 class="center">Four gates, two runtimes</h2>
+    <p class="sub center">Stages whose tools aren’t installed are skipped silently — no false positives.</p>
+    <div class="checks">
+      <table>
+        <thead><tr><th>Stage</th><th>Node.js</th><th>Python</th></tr></thead>
+        <tbody>
+          <tr><td><span class="num">1</span> Typecheck</td><td><code>tsc --noEmit</code></td><td><code>mypy .</code></td></tr>
+          <tr><td><span class="num">2</span> Lint</td><td><code>eslint .</code></td><td><code>ruff check .</code> → <code>flake8</code></td></tr>
+          <tr><td><span class="num">3</span> Test</td><td><code>jest</code> / <code>vitest</code></td><td><code>pytest -q</code></td></tr>
+          <tr><td><span class="num">4</span> Security</td><td><code>npm audit</code></td><td><code>pip-audit</code> → <code>bandit</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Install ===== -->
+<section id="install" class="section">
+  <div class="wrap">
+    <h2 class="center">Install in one line</h2>
+    <p class="sub center">Pick your platform. Then run <code>pre-flight-check init --tool all --project</code> in any repo.</p>
+
+    <div class="tabs">
+      <div class="tab-row" role="tablist">
+        <button class="tab is-active" data-tab="pipx">pipx</button>
+        <button class="tab" data-tab="brew">Homebrew</button>
+        <button class="tab" data-tab="scoop">Scoop</button>
+        <button class="tab" data-tab="curl">curl / PS</button>
+        <button class="tab" data-tab="claude">Claude plugin</button>
+      </div>
+
+      <div class="tab-panel is-active" data-panel="pipx">
+        <div class="cmd" data-copy="pipx install pre-flight-check"><code>pipx install pre-flight-check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+      </div>
+      <div class="tab-panel" data-panel="brew">
+        <div class="cmd" data-copy="brew tap mirekondro/pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check"><code>brew tap mirekondro/pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+        <div class="cmd" data-copy="brew install pre-flight-check"><code>brew install pre-flight-check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+      </div>
+      <div class="tab-panel" data-panel="scoop">
+        <div class="cmd" data-copy="scoop bucket add pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check"><code>scoop bucket add pre-flight-check https://github.com/mirekondro/The-Pre-Flight-Check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+        <div class="cmd" data-copy="scoop install pre-flight-check"><code>scoop install pre-flight-check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+      </div>
+      <div class="tab-panel" data-panel="curl">
+        <div class="cmd" data-copy="curl -fsSL https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.sh | bash"><code>curl -fsSL .../install.sh | bash</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+        <div class="cmd" data-copy="irm https://raw.githubusercontent.com/mirekondro/The-Pre-Flight-Check/main/install.ps1 | iex"><code>irm .../install.ps1 | iex</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+      </div>
+      <div class="tab-panel" data-panel="claude">
+        <div class="cmd" data-copy="claude plugin marketplace add mirekondro/The-Pre-Flight-Check"><code>claude plugin marketplace add mirekondro/The-Pre-Flight-Check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+        <div class="cmd" data-copy="claude plugin install pre-flight-check"><code>claude plugin install pre-flight-check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Tools ===== -->
+<section id="tools" class="section alt">
+  <div class="wrap">
+    <h2 class="center">Works with your AI tool</h2>
+    <p class="sub center">One install writes the native instruction file each tool already reads.</p>
+    <div class="tool-grid">
+      <div class="tool"><b>Claude Code</b><span>.claude/skills/</span></div>
+      <div class="tool"><b>OpenAI Codex</b><span>AGENTS.md</span></div>
+      <div class="tool"><b>Gemini CLI</b><span>GEMINI.md</span></div>
+      <div class="tool"><b>Cursor</b><span>.cursor/rules/</span></div>
+      <div class="tool"><b>GitHub Copilot</b><span>.github/copilot-instructions.md</span></div>
+      <div class="tool"><b>Windsurf</b><span>.windsurf/rules/</span></div>
+      <div class="tool"><b>Cline</b><span>.clinerules/</span></div>
+      <div class="tool"><b>Kiro</b><span>.kiro/steering/</span></div>
+      <div class="tool"><b>Roo Code</b><span>.roo/rules/</span></div>
+      <div class="tool"><b>Agent Skills</b><span>.agents/skills/</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-band">
+  <div class="wrap cta-inner">
+    <h2>Ship code that actually works.</h2>
+    <p>Add a real quality gate to your AI workflow in under a minute.</p>
+    <div class="cmd center-cmd" data-copy="pipx install pre-flight-check"><code>pipx install pre-flight-check</code><button class="copy" aria-label="Copy command"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg></button></div>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="https://github.com/mirekondro/The-Pre-Flight-Check" target="_blank" rel="noopener">Star on GitHub ★</a>
+      <a class="btn btn-ghost" href="https://github.com/mirekondro/The-Pre-Flight-Check#readme" target="_blank" rel="noopener">Read the docs</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ===== Footer ===== -->
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <div class="brand"><span class="brand-mark">✈</span><span class="brand-name">pre-flight-check</span></div>
+    <nav class="foot-links">
+      <a href="https://github.com/mirekondro/The-Pre-Flight-Check" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://pypi.org/project/pre-flight-check/" target="_blank" rel="noopener">PyPI</a>
+      <a href="https://github.com/mirekondro/The-Pre-Flight-Check/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+      <a href="https://github.com/mirekondro/The-Pre-Flight-Check/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+    </nav>
+    <p class="foot-note">© <span id="year">2026</span> mirekondro · Built with zero runtime dependencies.</p>
+  </div>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>
