@@ -14,8 +14,8 @@ class PreFlightCheck < Formula
 
   desc "Fail-fast quality gate for AI coding agents (Typecheck → Lint → Test → Audit)"
   homepage "https://github.com/mirekondro/The-Pre-Flight-Check"
-  url "https://github.com/mirekondro/The-Pre-Flight-Check/archive/refs/tags/v1.2.2.tar.gz"
-  sha256 "caa9a42e96033ef4ba403e9b89f03e7724e17c48fb088c408da4d24268fcb10e"
+  url "https://github.com/mirekondro/The-Pre-Flight-Check/archive/refs/tags/v1.3.0.tar.gz"
+  sha256 "8cbeaa86fbd0f44aed5508b56b34e99ed27f41b7e6bc44b51acd05320617e1e6"
   license "MIT"
   head "https://github.com/mirekondro/The-Pre-Flight-Check.git", branch: "main"
 
