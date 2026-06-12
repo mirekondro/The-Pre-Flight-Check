@@ -9,6 +9,14 @@ contract — any change to it is a **major** version bump.
 
 ## [Unreleased]
 
+### Added
+- **`pre-flight-check doctor`** — preview the detected runtime, the exact
+  stages that would run (with their commands), and which tools are present,
+  without executing anything. Answers "why did that gate skip?".
+- **`--only` / `--skip` stage selection** on `run` (and `doctor`): run or
+  preview a subset of `typecheck`, `lint`, `test`, `audit`. The engine
+  (`run-pipeline.py`) accepts the same flags plus `--plan`/`--dry-run`.
+
 ## [1.2.2] - 2026-06-12
 
 ### Fixed

@@ -96,8 +96,28 @@ def _resolve_scope(args: argparse.Namespace, tool: str) -> Path:
 
 # ---------- subcommand handlers ----------
 
-def _cmd_run(_: argparse.Namespace) -> int:
-    return engine_run()
+_STAGE_CHOICES = ["typecheck", "lint", "test", "audit"]
+
+
+def _stage_args(args: argparse.Namespace) -> List[str]:
+    """Translate --only / --skip on the namespace into engine CLI args."""
+    out: List[str] = []
+    only = getattr(args, "only", None)
+    skip = getattr(args, "skip", None)
+    if only:
+        out += ["--only", *only]
+    if skip:
+        out += ["--skip", *skip]
+    return out
+
+
+def _cmd_run(args: argparse.Namespace) -> int:
+    return engine_run(_stage_args(args))
+
+
+def _cmd_doctor(args: argparse.Namespace) -> int:
+    """Preview the runtime + stages that would run, without executing them."""
+    return engine_run(["--plan", *_stage_args(args)])
 
 
 def _cmd_list_tools(_: argparse.Namespace) -> int:
@@ -145,6 +165,14 @@ def _cmd_uninstall(args: argparse.Namespace) -> int:
 
 # ---------- argparse wiring ----------
 
+def _add_stage_flags(p: argparse.ArgumentParser) -> None:
+    g = p.add_mutually_exclusive_group()
+    g.add_argument("--only", nargs="+", metavar="STAGE", choices=_STAGE_CHOICES,
+                   help="Run only these stages: typecheck, lint, test, audit.")
+    g.add_argument("--skip", nargs="+", metavar="STAGE", choices=_STAGE_CHOICES,
+                   help="Run every stage except these.")
+
+
 def _add_scope_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--tool", default="claude",
                    help="AI tool to target (default: claude). Use 'all' for every supported tool.")
@@ -172,7 +200,15 @@ def _build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd")
 
     p_run = sub.add_parser("run", help="Run the pipeline engine against the current directory.")
+    _add_stage_flags(p_run)
     p_run.set_defaults(func=_cmd_run)
+
+    p_doctor = sub.add_parser(
+        "doctor",
+        help="Preview the runtime and stages that would run (no execution).",
+    )
+    _add_stage_flags(p_doctor)
+    p_doctor.set_defaults(func=_cmd_doctor)
 
     p_init = sub.add_parser("init", help="Deploy the skill / adapter file for one or more AI tools.")
     _add_scope_flags(p_init)

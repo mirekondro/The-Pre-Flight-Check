@@ -10,6 +10,7 @@ Vanilla Python 3, no third-party deps.
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import shutil
@@ -20,6 +21,14 @@ from typing import TypedDict
 
 
 MAX_CONTEXT_CHARS = 4000
+
+# User-facing stage keys (for --only / --skip) mapped to internal stage names.
+STAGE_KEYS = {
+    "typecheck": "TYPECHECK",
+    "lint": "LINT",
+    "test": "TEST",
+    "audit": "SECURITY AUDIT",
+}
 
 
 class Stage(TypedDict):
@@ -270,7 +279,71 @@ def emit_success() -> None:
     print("All quality gates verified successfully.")
 
 
-def main() -> int:
+def filter_stages(stages: list[Stage], only: list[str], skip: list[str]) -> list[Stage]:
+    """Narrow the stage list per --only / --skip (mutually exclusive upstream)."""
+    if only:
+        wanted = {STAGE_KEYS[k] for k in only}
+        return [s for s in stages if s["name"] in wanted]
+    if skip:
+        unwanted = {STAGE_KEYS[k] for k in skip}
+        return [s for s in stages if s["name"] not in unwanted]
+    return stages
+
+
+def emit_plan(runtime: str, cwd: Path, stages: list[Stage]) -> None:
+    """Dry-run report: what would run, plus tool availability. Never executes."""
+    print(f"# Pre-Flight Check — plan (runtime: {runtime})")
+    print(f"Working dir: {cwd}")
+    print()
+
+    if stages:
+        print("Stages that will run:")
+        for s in stages:
+            print(f"  ✓ {s['name']:<16} {cmd_to_str(s['cmd'])}")
+    else:
+        print("No stages will run.")
+
+    # Show which relevant CLIs are present, so the user can see *why* a gate
+    # was skipped. Node tool selection is dep-based, so we report the basics.
+    if runtime == "python":
+        relevant = ["mypy", "ruff", "flake8", "pytest", "pip-audit", "bandit"]
+    elif runtime == "node":
+        relevant = ["node", "npm", "pnpm", "yarn", "npx"]
+    else:
+        relevant = []
+    if relevant:
+        print("\nDetected tools:")
+        for tool in relevant:
+            mark = "✓" if which(tool) else "✗"
+            print(f"  {mark} {tool}")
+
+
+def parse_args(argv: list[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="run-pipeline",
+        description="Pre-Flight Check engine: typecheck -> lint -> test -> audit.",
+    )
+    parser.add_argument(
+        "--plan", "--dry-run", dest="plan", action="store_true",
+        help="Show which runtime and stages would run, without executing them.",
+    )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--only", nargs="+", metavar="STAGE", choices=list(STAGE_KEYS),
+        help="Run only these stages (typecheck, lint, test, audit).",
+    )
+    group.add_argument(
+        "--skip", nargs="+", metavar="STAGE", choices=list(STAGE_KEYS),
+        help="Run every stage except these.",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    only: list[str] = args.only or []
+    skip: list[str] = args.skip or []
+
     cwd = Path(os.getcwd())
     runtime = detect_runtime(cwd)
 
@@ -279,17 +352,27 @@ def main() -> int:
     elif runtime == "python":
         stages = build_python_stages(cwd)
     else:
+        if args.plan:
+            emit_plan("unknown", cwd, [])
+            return 0
         print("### ⚠️  PRE-FLIGHT SKIPPED: UNKNOWN RUNTIME")
         print("**Context for AI Fix:** No `package.json`, `pyproject.toml`, "
               "`poetry.lock`, or `requirements.txt` found in current directory. "
               "Cannot determine project runtime.")
         return 1
 
+    stages = filter_stages(stages, only, skip)
+
+    if args.plan:
+        emit_plan(runtime, cwd, stages)
+        return 0
+
     if not stages:
         print(f"### ⚠️  PRE-FLIGHT SKIPPED: NO STAGES RESOLVED ({runtime.upper()})")
         print("**Context for AI Fix:** Runtime detected but no usable tools "
-              "(typecheck/lint/test/audit) were found. Install dev tooling or "
-              "define `scripts` in `package.json`.")
+              "(typecheck/lint/test/audit) were found, or all were filtered out "
+              "by --only/--skip. Install dev tooling or define `scripts` in "
+              "`package.json`.")
         return 1
 
     print(f"# Pre-Flight Check — runtime: {runtime}", flush=True)

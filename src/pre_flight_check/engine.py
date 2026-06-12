@@ -13,6 +13,7 @@ import subprocess
 import sys
 from importlib import resources
 from pathlib import Path
+from typing import List, Optional
 
 
 def script_path() -> Path:
@@ -25,8 +26,8 @@ def script_path() -> Path:
         return Path(fp)
 
 
-def run() -> int:
-    """Execute the bundled engine. Returns its exit code."""
+def run(args: Optional[List[str]] = None) -> int:
+    """Execute the bundled engine, forwarding extra CLI args. Returns its exit code."""
     script = script_path()
     if not script.is_file():
         sys.stderr.write(
@@ -35,5 +36,7 @@ def run() -> int:
             "`pipx install --force pre-flight-check`.\n"
         )
         return 2
-    completed = subprocess.run([sys.executable, str(script)], check=False)
+    completed = subprocess.run(
+        [sys.executable, str(script), *(args or [])], check=False
+    )
     return completed.returncode

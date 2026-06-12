@@ -105,6 +105,15 @@ pre-flight-check init --tool claude          # or cursor, codex, gemini, copilot
 pre-flight-check init --tool all --project   # install for every supported AI tool at once
 ```
 
+Run it, or preview what it would run:
+
+```bash
+pre-flight-check run                     # run every resolved gate (the default)
+pre-flight-check run --only typecheck    # run a single gate (also: lint, test, audit)
+pre-flight-check run --skip audit        # run everything except one
+pre-flight-check doctor                  # show the runtime + stages + detected tools, run nothing
+```
+
 See **[INSTALL.md](INSTALL.md)** for the full per-tool matrix and troubleshooting.
 
 ## ⚙️ What it does
