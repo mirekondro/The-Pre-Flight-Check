@@ -6,7 +6,7 @@
 
 A universal quality gate that runs **Typecheck → Lint → Test → Security Audit**
 before any task is marked complete.
-Auto-detects Node.js and Python. Works with [10 AI coding tools](#-supported-ai-tools).
+Auto-detects Node.js, Python, Go, and Rust. Works with [10 AI coding tools](#-supported-ai-tools).
 
 <br>
 
@@ -169,15 +169,15 @@ All quality gates verified successfully.
 
 ## ✅ What it checks
 
-| Stage | Node.js | Python |
-|---|---|---|
-| **1. Typecheck** | `tsc --noEmit` (or `npm run typecheck`) | `mypy .` |
-| **2. Lint** | `eslint .` (or `npm run lint`) | `ruff check .` → `flake8 .` |
-| **3. Test** | `jest` / `vitest` (or `npm test`) | `pytest -q` |
-| **4. Security Audit** | `npm audit --audit-level=high` | `pip-audit` → `bandit -r .` |
+| Stage | Node.js | Python | Go | Rust |
+|---|---|---|---|---|
+| **1. Typecheck** | `tsc --noEmit` | `mypy .` | `go build ./...` | `cargo check` |
+| **2. Lint** | `eslint .` | `ruff` → `flake8` | `golangci-lint` → `go vet` | `cargo clippy` |
+| **3. Test** | `jest` / `vitest` | `pytest -q` | `go test ./...` | `cargo test` |
+| **4. Security Audit** | `npm audit` | `pip-audit` → `bandit` | `govulncheck` | `cargo audit` |
 
-> Stages whose tools aren't installed are **skipped silently** — no false positives from missing
-> optional gear.
+> Node and Python prefer your existing `package.json` / Poetry scripts. Stages whose tools aren't
+> installed are **skipped silently** — no false positives from missing optional gear.
 
 ## 🔍 How it works
 

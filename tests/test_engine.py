@@ -145,6 +145,53 @@ def test_python_no_tools_no_stages(engine, tmp_path, monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
+# Go / Rust runtimes
+# --------------------------------------------------------------------------- #
+
+@pytest.mark.parametrize("manifest,expected", [("go.mod", "go"), ("Cargo.toml", "rust")])
+def test_detect_runtime_go_rust(engine, tmp_path, manifest, expected):
+    write(tmp_path, manifest)
+    assert engine.detect_runtime(tmp_path) == expected
+
+
+def test_go_stages_full(engine, tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "which", lambda c: True)
+    stages = engine.build_go_stages(tmp_path)
+    assert stage_names(stages) == ["TYPECHECK", "LINT", "TEST", "SECURITY AUDIT"]
+    lint = [s for s in stages if s["name"] == "LINT"][0]
+    assert lint["cmd"][0] == "golangci-lint"
+
+
+def test_go_lint_falls_back_to_vet(engine, tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "which", lambda c: c == "go")
+    stages = engine.build_go_stages(tmp_path)
+    assert stage_names(stages) == ["TYPECHECK", "LINT", "TEST"]
+    lint = [s for s in stages if s["name"] == "LINT"][0]
+    assert lint["cmd"] == ["go", "vet", "./..."]
+
+
+def test_go_no_toolchain_no_stages(engine, tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "which", lambda c: False)
+    assert engine.build_go_stages(tmp_path) == []
+
+
+def test_rust_stages_full(engine, tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "which", lambda c: True)
+    assert stage_names(engine.build_rust_stages(tmp_path)) == [
+        "TYPECHECK", "LINT", "TEST", "SECURITY AUDIT"]
+
+
+def test_rust_minimal(engine, tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "which", lambda c: c == "cargo")
+    assert stage_names(engine.build_rust_stages(tmp_path)) == ["TYPECHECK", "TEST"]
+
+
+def test_rust_no_cargo_no_stages(engine, tmp_path, monkeypatch):
+    monkeypatch.setattr(engine, "which", lambda c: False)
+    assert engine.build_rust_stages(tmp_path) == []
+
+
+# --------------------------------------------------------------------------- #
 # Cross-platform executable resolution
 # --------------------------------------------------------------------------- #
 

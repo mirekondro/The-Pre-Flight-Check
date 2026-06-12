@@ -201,9 +201,44 @@ def build_python_stages(cwd: Path) -> list[Stage]:
     return stages
 
 
+def build_go_stages(cwd: Path) -> list[Stage]:
+    stages: list[Stage] = []
+    if not which("go"):
+        return stages
+    # `go build ./...` compiles every package — the closest thing Go has to a
+    # standalone typecheck. It emits no artifacts for library packages.
+    stages.append({"name": "TYPECHECK", "cmd": ["go", "build", "./..."]})
+    if which("golangci-lint"):
+        stages.append({"name": "LINT", "cmd": ["golangci-lint", "run"]})
+    else:
+        stages.append({"name": "LINT", "cmd": ["go", "vet", "./..."]})
+    stages.append({"name": "TEST", "cmd": ["go", "test", "./..."]})
+    if which("govulncheck"):
+        stages.append({"name": "SECURITY AUDIT", "cmd": ["govulncheck", "./..."]})
+    return stages
+
+
+def build_rust_stages(cwd: Path) -> list[Stage]:
+    stages: list[Stage] = []
+    if not which("cargo"):
+        return stages
+    stages.append({"name": "TYPECHECK", "cmd": ["cargo", "check", "--all-targets"]})
+    if which("cargo-clippy"):
+        stages.append({"name": "LINT",
+                       "cmd": ["cargo", "clippy", "--all-targets", "--", "-D", "warnings"]})
+    stages.append({"name": "TEST", "cmd": ["cargo", "test"]})
+    if which("cargo-audit"):
+        stages.append({"name": "SECURITY AUDIT", "cmd": ["cargo", "audit"]})
+    return stages
+
+
 def detect_runtime(cwd: Path) -> str:
     if file_exists(cwd, "package.json"):
         return "node"
+    if file_exists(cwd, "go.mod"):
+        return "go"
+    if file_exists(cwd, "Cargo.toml"):
+        return "rust"
     for sig in ("pyproject.toml", "poetry.lock", "requirements.txt", "setup.py", "setup.cfg"):
         if file_exists(cwd, sig):
             return "python"
@@ -309,6 +344,10 @@ def emit_plan(runtime: str, cwd: Path, stages: list[Stage]) -> None:
         relevant = ["mypy", "ruff", "flake8", "pytest", "pip-audit", "bandit"]
     elif runtime == "node":
         relevant = ["node", "npm", "pnpm", "yarn", "npx"]
+    elif runtime == "go":
+        relevant = ["go", "golangci-lint", "govulncheck"]
+    elif runtime == "rust":
+        relevant = ["cargo", "cargo-clippy", "cargo-audit"]
     else:
         relevant = []
     if relevant:
@@ -351,14 +390,18 @@ def main(argv: list[str] | None = None) -> int:
         stages = build_node_stages(cwd)
     elif runtime == "python":
         stages = build_python_stages(cwd)
+    elif runtime == "go":
+        stages = build_go_stages(cwd)
+    elif runtime == "rust":
+        stages = build_rust_stages(cwd)
     else:
         if args.plan:
             emit_plan("unknown", cwd, [])
             return 0
         print("### ⚠️  PRE-FLIGHT SKIPPED: UNKNOWN RUNTIME")
         print("**Context for AI Fix:** No `package.json`, `pyproject.toml`, "
-              "`poetry.lock`, or `requirements.txt` found in current directory. "
-              "Cannot determine project runtime.")
+              "`requirements.txt`, `go.mod`, or `Cargo.toml` found in current "
+              "directory. Cannot determine project runtime.")
         return 1
 
     stages = filter_stages(stages, only, skip)
