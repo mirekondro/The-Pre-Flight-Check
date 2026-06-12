@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pre-flight-check"
-version = "1.2.1"
+version = "1.2.2"
 description = "Fail-fast quality gate for AI coding agents: Typecheck → Lint → Test → Security Audit. Stops the agent declaring 'done' on broken code."
 readme = "README.md"
 # Package requires 3.9+ because we use importlib.resources.files() to read

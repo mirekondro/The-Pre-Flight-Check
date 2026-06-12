@@ -11,5 +11,13 @@ Public API: see :mod:`pre_flight_check.cli`.
 
 from __future__ import annotations
 
-__version__ = "1.2.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    # Single source of truth is the version in pyproject.toml; read it from
+    # the installed distribution metadata so the two can never drift.
+    __version__ = version("pre-flight-check")
+except PackageNotFoundError:  # running from a source tree, not installed
+    __version__ = "0.0.0+dev"
+
 __all__ = ["__version__"]

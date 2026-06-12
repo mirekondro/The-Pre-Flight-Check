@@ -9,6 +9,14 @@ contract — any change to it is a **major** version bump.
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-06-12
+
+### Fixed
+- **`--version` reported the wrong number.** `__version__` was hardcoded and
+  had drifted from `pyproject.toml` (1.2.1 reported `1.2.0`). It is now derived
+  from the installed package metadata, so the two can never diverge — and the
+  Homebrew formula's `assert_match version` test passes again.
+
 ## [1.2.1] - 2026-06-12
 
 ### Added
@@ -52,7 +60,8 @@ contract — any change to it is a **major** version bump.
 - Initial release: fail-fast Typecheck → Lint → Test → Security Audit pipeline
   for Node.js and Python, delivered as a Claude Code skill.
 
-[Unreleased]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.0.0...v1.1.0
