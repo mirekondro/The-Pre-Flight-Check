@@ -9,6 +9,8 @@ contract — any change to it is a **major** version bump.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-06-12
+
 ### Added
 - Automated release pipeline (`.github/workflows/release.yml`): tagging `vX.Y.Z`
   builds the wheel + sdist, verifies them with `twine check`, attaches them with
@@ -50,7 +52,8 @@ contract — any change to it is a **major** version bump.
 - Initial release: fail-fast Typecheck → Lint → Test → Security Audit pipeline
   for Node.js and Python, delivered as a Claude Code skill.
 
-[Unreleased]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mirekondro/The-Pre-Flight-Check/releases/tag/v1.0.0
