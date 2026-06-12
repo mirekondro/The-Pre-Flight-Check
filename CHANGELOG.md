@@ -9,6 +9,8 @@ contract — any change to it is a **major** version bump.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-12
+
 ### Added
 - **`pre-flight-check doctor`** — preview the detected runtime, the exact
   stages that would run (with their commands), and which tools are present,
@@ -68,7 +70,8 @@ contract — any change to it is a **major** version bump.
 - Initial release: fail-fast Typecheck → Lint → Test → Security Audit pipeline
   for Node.js and Python, delivered as a Claude Code skill.
 
-[Unreleased]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.2...v1.3.0
 [1.2.2]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.1...v1.2.2
 [1.2.1]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/mirekondro/The-Pre-Flight-Check/compare/v1.1.0...v1.2.0
