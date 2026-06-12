@@ -11,13 +11,15 @@ Vanilla Python 3, no third-party deps.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import TypedDict
+from typing import Any, TypedDict
 
 
 MAX_CONTEXT_CHARS = 4000
@@ -325,10 +327,13 @@ def filter_stages(stages: list[Stage], only: list[str], skip: list[str]) -> list
     return stages
 
 
-def emit_plan(runtime: str, cwd: Path, stages: list[Stage]) -> None:
+def emit_plan(runtime: str, cwd: Path, stages: list[Stage],
+              config_note: str | None = None) -> None:
     """Dry-run report: what would run, plus tool availability. Never executes."""
     print(f"# Pre-Flight Check — plan (runtime: {runtime})")
     print(f"Working dir: {cwd}")
+    if config_note:
+        print(f"Config: {config_note}")
     print()
 
     if stages:
@@ -355,6 +360,74 @@ def emit_plan(runtime: str, cwd: Path, stages: list[Stage]) -> None:
         for tool in relevant:
             mark = "✓" if which(tool) else "✗"
             print(f"  {mark} {tool}")
+
+
+def _load_toml(path: Path) -> dict[str, object]:
+    """Parse a TOML file. Returns {} if tomllib is unavailable (Python < 3.11)
+    or the file can't be read/parsed — config is always best-effort."""
+    try:
+        tomllib: Any = importlib.import_module("tomllib")
+    except ModuleNotFoundError:
+        return {}
+    try:
+        with path.open("rb") as f:
+            data = tomllib.load(f)
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def load_config(cwd: Path) -> dict[str, object]:
+    """Read pre-flight-check config: `.pre-flight-check.toml` (top-level keys)
+    takes precedence, else `[tool.pre-flight-check]` in pyproject.toml."""
+    standalone = cwd / ".pre-flight-check.toml"
+    if standalone.is_file():
+        return _load_toml(standalone)
+    pp = cwd / "pyproject.toml"
+    if pp.is_file():
+        tool = _load_toml(pp).get("tool", {})
+        if isinstance(tool, dict):
+            cfg = tool.get("pre-flight-check", {})
+            if isinstance(cfg, dict):
+                return cfg
+    return {}
+
+
+def config_source(cwd: Path) -> str | None:
+    """Human-readable name of the active config file, or None."""
+    if (cwd / ".pre-flight-check.toml").is_file():
+        return ".pre-flight-check.toml"
+    pp = cwd / "pyproject.toml"
+    if pp.is_file():
+        tool = _load_toml(pp).get("tool", {})
+        if isinstance(tool, dict) and isinstance(tool.get("pre-flight-check"), dict):
+            return "pyproject.toml [tool.pre-flight-check]"
+    return None
+
+
+def apply_config(stages: list[Stage], cfg: dict[str, object]) -> list[Stage]:
+    """Apply `commands` overrides and `disable` from config to the stage list.
+
+    A `commands.<stage>` override replaces (or adds) that stage's command, even
+    if auto-detection skipped it. `disable` removes stages. Canonical order is
+    preserved: typecheck -> lint -> test -> audit.
+    """
+    commands = cfg.get("commands", {})
+    disable = cfg.get("disable", [])
+    if not isinstance(commands, dict):
+        commands = {}
+    if not isinstance(disable, list):
+        disable = []
+
+    by_name = {s["name"]: s for s in stages}
+    for key, name in STAGE_KEYS.items():
+        override = commands.get(key)
+        if isinstance(override, str) and override.strip():
+            by_name[name] = {"name": name, "cmd": shlex.split(override)}
+
+    ordered = [STAGE_KEYS[k] for k in ("typecheck", "lint", "test", "audit")]
+    disabled = {STAGE_KEYS[k] for k in disable if k in STAGE_KEYS}
+    return [by_name[n] for n in ordered if n in by_name and n not in disabled]
 
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
@@ -404,10 +477,11 @@ def main(argv: list[str] | None = None) -> int:
               "directory. Cannot determine project runtime.")
         return 1
 
+    stages = apply_config(stages, load_config(cwd))
     stages = filter_stages(stages, only, skip)
 
     if args.plan:
-        emit_plan(runtime, cwd, stages)
+        emit_plan(runtime, cwd, stages, config_source(cwd))
         return 0
 
     if not stages:

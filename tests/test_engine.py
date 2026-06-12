@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import types
 
 import pytest
+
+HAS_TOMLLIB = importlib.util.find_spec("tomllib") is not None
 
 
 def write(p, name, content=""):
@@ -246,6 +249,68 @@ def test_filter_skip(engine):
 
 def test_filter_none(engine):
     assert len(engine.filter_stages(_stages(engine), [], [])) == 4
+
+
+# --------------------------------------------------------------------------- #
+# Config layer
+# --------------------------------------------------------------------------- #
+
+def test_apply_config_override(engine):
+    out = engine.apply_config([{"name": "LINT", "cmd": ["eslint", "."]}],
+                              {"commands": {"lint": "biome check ."}})
+    assert out == [{"name": "LINT", "cmd": ["biome", "check", "."]}]
+
+
+def test_apply_config_adds_missing_stage(engine):
+    out = engine.apply_config([], {"commands": {"test": "vitest run"}})
+    assert out == [{"name": "TEST", "cmd": ["vitest", "run"]}]
+
+
+def test_apply_config_disable(engine):
+    stages = [{"name": "TYPECHECK", "cmd": ["t"]}, {"name": "SECURITY AUDIT", "cmd": ["a"]}]
+    assert stage_names(engine.apply_config(stages, {"disable": ["audit"]})) == ["TYPECHECK"]
+
+
+def test_apply_config_canonical_order(engine):
+    stages = [{"name": "TEST", "cmd": ["x"]}, {"name": "TYPECHECK", "cmd": ["t"]}]
+    assert stage_names(engine.apply_config(stages, {})) == ["TYPECHECK", "TEST"]
+
+
+def test_apply_config_ignores_bad_types(engine):
+    stages = [{"name": "LINT", "cmd": ["l"]}]
+    assert engine.apply_config(stages, {"commands": "nope", "disable": "nope"}) == stages
+
+
+@pytest.mark.skipif(not HAS_TOMLLIB, reason="tomllib requires Python 3.11+")
+def test_load_config_standalone(engine, tmp_path):
+    (tmp_path / ".pre-flight-check.toml").write_text(
+        'disable = ["audit"]\n[commands]\nlint = "biome check ."\n')
+    cfg = engine.load_config(tmp_path)
+    assert cfg["disable"] == ["audit"]
+    assert cfg["commands"]["lint"] == "biome check ."
+
+
+@pytest.mark.skipif(not HAS_TOMLLIB, reason="tomllib requires Python 3.11+")
+def test_load_config_pyproject(engine, tmp_path):
+    (tmp_path / "pyproject.toml").write_text('[tool.pre-flight-check]\ndisable = ["test"]\n')
+    assert engine.load_config(tmp_path)["disable"] == ["test"]
+
+
+@pytest.mark.skipif(not HAS_TOMLLIB, reason="tomllib requires Python 3.11+")
+def test_load_config_standalone_precedence(engine, tmp_path):
+    (tmp_path / "pyproject.toml").write_text('[tool.pre-flight-check]\ndisable = ["test"]\n')
+    (tmp_path / ".pre-flight-check.toml").write_text('disable = ["lint"]\n')
+    assert engine.load_config(tmp_path)["disable"] == ["lint"]
+
+
+def test_load_config_none(engine, tmp_path):
+    assert engine.load_config(tmp_path) == {}
+
+
+def test_config_source_standalone(engine, tmp_path):
+    assert engine.config_source(tmp_path) is None
+    (tmp_path / ".pre-flight-check.toml").write_text("disable = []\n")
+    assert engine.config_source(tmp_path) == ".pre-flight-check.toml"
 
 
 # --------------------------------------------------------------------------- #

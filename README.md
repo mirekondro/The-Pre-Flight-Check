@@ -181,13 +181,31 @@ All quality gates verified successfully.
 
 ## 🔍 How it works
 
-- **🔎 Auto-detects** the runtime from manifest files (`package.json`, `pyproject.toml`, `requirements.txt`, …).
+- **🔎 Auto-detects** the runtime from manifest files (`package.json`, `pyproject.toml`, `requirements.txt`, `go.mod`, `Cargo.toml`, …).
 - **📦 Picks the right package manager** from the lockfile: `pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm.
 - **🛠️ Prefers your existing scripts** — if `package.json` defines `lint`, the pipeline calls `npm run lint` instead of invoking `eslint` directly.
 - **🛑 Halts on first failure** — no point linting code that doesn't typecheck.
 - **🚫 Forbids escape hatches.** The instruction file the AI agent reads (`SKILL.md`, `AGENTS.md`, `.cursorrules/*.mdc`, etc.) explicitly bans `// @ts-ignore`, `# type: ignore`, deleting failing tests, adding to ignore lists, and other ways to mark the gate green without fixing the bug.
 
 > The whole engine is **one Python file with zero runtime dependencies.** Audit it in five minutes.
+
+## ⚙️ Configuration (optional)
+
+Zero config by default. To override a command, disable a gate, or add one, drop
+a `[tool.pre-flight-check]` table in `pyproject.toml` or a `.pre-flight-check.toml`:
+
+```toml
+# .pre-flight-check.toml
+disable = ["audit"]            # skip a gate entirely
+
+[commands]                     # override or add a gate's command
+lint = "biome check ."
+test = "vitest run --coverage"
+```
+
+Preview the resolved plan any time with `pre-flight-check doctor`. (Config
+parsing uses `tomllib`, so it needs the engine running on Python 3.11+; older
+engines simply ignore it.)
 
 ## 📋 Requirements
 
