@@ -18,6 +18,14 @@ contract — any change to it is a **major** version bump.
 - `.gitattributes` enforcing `eol=lf` to stop CRLF drift breaking bash CI on Windows.
 
 ### Fixed
+- **Engine on Windows:** Node stages (`npm`/`npx`/`yarn`/`pnpm`/`tsc`/`eslint`)
+  no longer fail with "command not found". The engine resolves each executable
+  via `shutil.which()` and runs `.cmd`/`.bat` shims through the command
+  interpreter, which `CreateProcess` cannot exec directly.
+- **No false `SECURITY AUDIT` failure:** the audit stage is skipped when no
+  lockfile is present (`npm`/`pnpm`/`yarn audit` error without one).
+- **No false `TEST` failure:** the `npm init` placeholder test script
+  (`echo "Error: no test specified" && exit 1`) is ignored.
 - CI `package-smoke` on `windows-latest`: the pipx round-trip temp dir is now
   created and consumed in a single bash step, avoiding the missing `/tmp` mount
   in a fresh Git Bash shell.
