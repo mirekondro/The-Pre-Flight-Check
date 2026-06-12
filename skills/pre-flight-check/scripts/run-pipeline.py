@@ -117,20 +117,22 @@ def build_node_stages(cwd: Path) -> list[Stage]:
     elif has_dep(cwd, "eslint"):
         stages.append({"name": "LINT", "cmd": pm_exec(pm, "eslint", ".")})
 
-    # Test
-    if "test" in scripts:
+    # Test — ignore the `npm init` placeholder script that always exits 1.
+    test_script = scripts.get("test", "")
+    if test_script and "no test specified" not in test_script:
         stages.append({"name": "TEST", "cmd": pm_run(pm, "test")})
     elif has_dep(cwd, "jest"):
         stages.append({"name": "TEST", "cmd": pm_exec(pm, "jest", "--passWithNoTests")})
     elif has_dep(cwd, "vitest"):
         stages.append({"name": "TEST", "cmd": pm_exec(pm, "vitest", "run")})
 
-    # Security audit
-    if pm == "npm":
+    # Security audit — requires a lockfile; npm/pnpm/yarn all error without one,
+    # which would be a false failure. Skip silently when no lockfile is present.
+    if pm == "npm" and file_exists(cwd, "package-lock.json"):
         stages.append({"name": "SECURITY AUDIT", "cmd": ["npm", "audit", "--audit-level=high"]})
-    elif pm == "pnpm":
+    elif pm == "pnpm" and file_exists(cwd, "pnpm-lock.yaml"):
         stages.append({"name": "SECURITY AUDIT", "cmd": ["pnpm", "audit", "--audit-level", "high"]})
-    elif pm == "yarn":
+    elif pm == "yarn" and file_exists(cwd, "yarn.lock"):
         stages.append({"name": "SECURITY AUDIT", "cmd": ["yarn", "npm", "audit", "--severity", "high"]})
 
     return stages
@@ -217,11 +219,31 @@ def cmd_to_str(cmd: list[str]) -> str:
     return " ".join(parts)
 
 
+def resolve_exe(cmd: list[str]) -> list[str] | None:
+    """Resolve cmd[0] to a runnable path, cross-platform.
+
+    On Windows the Node tools (npm, npx, yarn, pnpm, tsc, eslint, …) are
+    .cmd/.bat shims that CreateProcess cannot execute directly, so they are
+    wrapped in the command interpreter. shutil.which() finds them via PATHEXT.
+    Returns None if the executable is not on PATH.
+    """
+    exe = shutil.which(cmd[0])
+    if exe is None:
+        return None
+    rest = cmd[1:]
+    if os.name == "nt" and exe.lower().endswith((".cmd", ".bat")):
+        comspec = os.environ.get("COMSPEC", "cmd.exe")
+        return [comspec, "/c", exe, *rest]
+    return [exe, *rest]
+
+
 def run_stage(stage: Stage) -> tuple[int, str, str]:
-    cmd = stage["cmd"]
+    resolved = resolve_exe(stage["cmd"])
+    if resolved is None:
+        return 127, "", f"command not found: {stage['cmd'][0]}"
     try:
         proc = subprocess.run(
-            cmd,
+            resolved,
             capture_output=True,
             text=True,
             check=False,
