@@ -1,0 +1,6 @@
+# Machine-specific Obsidian state — keep the shared config (graph, plugins)
+# tracked, but not per-user workspace/cache.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
+.trash/
