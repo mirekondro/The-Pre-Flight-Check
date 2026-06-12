@@ -1,11 +1,11 @@
 {
-    "version": "1.2.2",
+    "version": "1.3.0",
     "description": "Fail-fast quality gate for AI coding agents (Typecheck → Lint → Test → Security Audit). Stops the agent declaring 'done' on broken code.",
     "homepage": "https://github.com/mirekondro/The-Pre-Flight-Check",
     "license": "MIT",
     "depends": "python",
-    "url": "https://github.com/mirekondro/The-Pre-Flight-Check/releases/download/v1.2.2/pre_flight_check-1.2.2-py3-none-any.whl#/dl.whl",
-    "hash": "sha256:9a1a9392ff68e0b4e4bc26d66243c5112f99101ccf2d55621199abd3f784532e",
+    "url": "https://github.com/mirekondro/The-Pre-Flight-Check/releases/download/v1.3.0/pre_flight_check-1.3.0-py3-none-any.whl#/dl.whl",
+    "hash": "sha256:a04630b39f1a459298745cfe1939db995b80356c10534cdc78b7ead1db464104",
     "installer": {
         "script": [
             "Write-Host 'Installing pre-flight-check wheel into Scoop app dir...'",
