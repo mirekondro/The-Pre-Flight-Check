@@ -36,6 +36,10 @@ classifiers = [
 # Engine has zero runtime dependencies on purpose.
 dependencies = []
 
+[project.optional-dependencies]
+# Tooling for running the test suite — never required at runtime.
+test = ["pytest>=7"]
+
 [project.urls]
 Homepage = "https://github.com/mirekondro/The-Pre-Flight-Check"
 Documentation = "https://github.com/mirekondro/The-Pre-Flight-Check/blob/main/INSTALL.md"

@@ -61,6 +61,22 @@ jobs:
         run: mypy --strict --python-version 3.9 src/pre_flight_check/
 
   # ---------------------------------------------------------------------------
+  # Unit tests for the pipeline engine (run-pipeline.py).
+  # ---------------------------------------------------------------------------
+  engine-tests:
+    name: Engine unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pytest
+        run: pip install --quiet pytest
+      - name: Run tests
+        run: python -m pytest tests/ -q
+
+  # ---------------------------------------------------------------------------
   # Build the wheel, install it, and round-trip the CLI in a temp project.
   # ---------------------------------------------------------------------------
   package-smoke:
