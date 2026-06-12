@@ -7,13 +7,55 @@
   "showOrphans": true,
   "collapse-color-groups": false,
   "colorGroups": [
-    { "query": "tag:#engine", "color": { "a": 1, "rgb": 5025616 } },
-    { "query": "tag:#cli", "color": { "a": 1, "rgb": 2201331 } },
-    { "query": "tag:#distribution", "color": { "a": 1, "rgb": 14837574 } },
-    { "query": "tag:#tooling", "color": { "a": 1, "rgb": 15637299 } },
-    { "query": "tag:#infra", "color": { "a": 1, "rgb": 16089649 } },
-    { "query": "tag:#moc", "color": { "a": 1, "rgb": 16777215 } },
-    { "query": "tag:#docs", "color": { "a": 1, "rgb": 7053553 } }
+    {
+      "query": "tag:#engine",
+      "color": {
+        "a": 1,
+        "rgb": 5025616
+      }
+    },
+    {
+      "query": "tag:#cli",
+      "color": {
+        "a": 1,
+        "rgb": 2201331
+      }
+    },
+    {
+      "query": "tag:#distribution",
+      "color": {
+        "a": 1,
+        "rgb": 14837574
+      }
+    },
+    {
+      "query": "tag:#tooling",
+      "color": {
+        "a": 1,
+        "rgb": 15637299
+      }
+    },
+    {
+      "query": "tag:#infra",
+      "color": {
+        "a": 1,
+        "rgb": 16089649
+      }
+    },
+    {
+      "query": "tag:#moc",
+      "color": {
+        "a": 1,
+        "rgb": 16777215
+      }
+    },
+    {
+      "query": "tag:#docs",
+      "color": {
+        "a": 1,
+        "rgb": 7053553
+      }
+    }
   ],
   "collapse-display": false,
   "showArrow": true,
@@ -25,6 +67,6 @@
   "repelStrength": 11,
   "linkStrength": 1,
   "linkDistance": 230,
-  "scale": 0.85,
-  "close": false
+  "scale": 1.3144738041627788,
+  "close": true
 }
